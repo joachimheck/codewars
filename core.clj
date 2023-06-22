@@ -280,17 +280,6 @@
 
 
 
-(defn get-clues-for [clues type n]
-  (if (= type :column)
-    [(get clues n) (get clues (- 11 n))]
-    [(get clues (- 15 n)) (get clues (+ 4 n))]))
-
-(defn get-spaces-for [clue-index]
-  (cond (<= 0 clue-index 3) (map (fn [i] [clue-index i]) (range 4))
-        (<= 4 clue-index 7) (map (fn [i] [(- 3 i) (- clue-index 4)]) (range 4))
-        (<= 8 clue-index 11) (map (fn [i] [(- 11 clue-index) (- 3 i)]) (range 4))
-        (<= 12 clue-index 15) (map (fn [i] [i (- 15 clue-index)]) (range 4))))
-
 (defn get-clue-for [clues [type n end]]
   (if (= type :column)
     (if (= end 0)
@@ -299,64 +288,6 @@
     (if (= end 0)
       (get clues (- 15 n))
       (get clues (+ 4 n)))))
-
-(defn cross-spaces [[x y :as pos]]
-  (remove #{pos}
-          (concat
-           (for [i (range 4)] [i y])
-           (for [j (range 4)] [x j]))))
-
-(defn set-value [grid pos value]
-  (println "set-value" pos value)
-  (let [grid (assoc grid pos {:value value :possible #{value}})]
-    (reduce (fn [g p]
-              (update-in g [p :possible] #(disj % value)))
-            grid
-            (cross-spaces pos))))
-
-(def combinations
-  (let [f (fn perms [xs]
-            (if (empty? xs)
-              '(())
-              (mapcat (fn [first] (map #(vec (concat (list first) %)) (perms (remove #{first} xs)))) xs)))]
-    (f [1 2 3 4])))
-
-(defn possible-combinations [grid-cells]
-  (println "possible-combinations" grid-cells)
-  (filter (fn [combo]
-            (every? true? (for [i (range 4)]
-                            (contains? (:possible (nth grid-cells i)) (get combo i)))))
-          combinations))
-
-(defn overlap [combos]
-  (let [overlaps (reduce (fn [acc combo]
-                           (reduce (fn [acc i]
-                                     (update acc i #(conj % (get combo i))))
-                                   acc
-                                   (range 4)))
-                         [#{} #{} #{} #{}]
-                         combos)]
-    (merge
-     (for [i (range 4)
-           :when (= (count (get overlaps i)) 1)]
-       {i (first (get overlaps i))}))))
-
-(defn solve-puzzle [clues]
-  (let [grid (into {} (for [i (range 4)
-                            j (range 4)]
-                        [[i j] {:value nil :possible #{1 2 3 4}}]))
-        _ (println "grid" grid)
-        clue-map (apply merge-with concat (map (fn [[k v]] {v (list k)}) (map-indexed list clues)))
-        ones (reduce (fn [grid i] (set-value grid (first (get-spaces-for i)) 4))
-                     grid
-                     (get clue-map 1))
-        ;; fours (reduce (fn [grid i] (into grid (map (fn [p n] [p n]) (get-spaces-for i) [1 2 3 4])))
-        ;;               ones
-        ;;               (get clue-map 4))
-        ]
-    (overlap (possible-combinations (for [i (range 4)] (get ones [2 i]))))
-
-))
 
 (defn no-zero [x]
   (if (= x 0) " " x))
@@ -371,11 +302,93 @@
        (concat
         (list (no-zero (get-clue-for clues [:row j 0])))
         (for [i (range 4)]
-          (get grid [i j] "-"))
+          (first (get grid [i j])))
         (list (no-zero (get-clue-for clues [:row j 3]))))))
     (list (str " " (string/join (for [i (range 4)] (no-zero (get-clue-for clues [:column i 3])))))))))
 
+(def empty-grid (into {} (for [i (range 4) j (range 4)] [[i j] #{1 2 3 4}])))
 
+(def combinations
+  (let [f (fn perms [xs]
+            (if (empty? xs)
+              '(())
+              (mapcat (fn [first] (map #(vec (concat (list first) %)) (perms (remove #{first} xs)))) xs)))]
+    (f [1 2 3 4])))
 
-;; (let [clues [0 0 1 2 0 2 0 0 0 3 0 0 0 1 0 0]]
+(defn get-spaces-for [clue-index]
+  (cond (<= 0 clue-index 3) (map (fn [i] [clue-index i]) (range 4))
+        (<= 4 clue-index 7) (map (fn [i] [(- 3 i) (- clue-index 4)]) (range 4))
+        (<= 8 clue-index 11) (map (fn [i] [(- 11 clue-index) (- 3 i)]) (range 4))
+        (<= 12 clue-index 15) (map (fn [i] [i (- 15 clue-index)]) (range 4))))
+
+(defn get-cells-for [grid clue-index]
+  (map #(get grid %) (get-spaces-for clue-index)))
+
+(defn cross-spaces [[x y :as pos]]
+  (remove #{pos}
+          (concat
+           (for [i (range 4)] [i y])
+           (for [j (range 4)] [x j]))))
+
+(defn possible-combinations [quad]
+  (filter (fn [combo]
+            (every? true? (for [i (range 4)]
+                            (contains? (nth quad i) (get combo i)))))
+          combinations))
+
+(defn make-grid-cells [combinations]
+  (reduce (fn [quad combo]
+            (reduce (fn [quad i]
+                      (update quad i #(conj % (get combo i))))
+                    quad
+                    (range 4)))
+          (vec (repeat 4 #{}))
+          combinations))
+
+(defn count-visible [heights]
+  (second
+   (reduce (fn [[max-h visible] height] [(max max-h height) (if (> height max-h) (inc visible) visible)])
+           [0 0]
+           heights)))
+
+(defn possible-sequences [clue quad]
+  (filter #(= clue (count-visible %)) (possible-combinations quad)))
+
+(defn reduce-grid [grid]
+  (reduce (fn [grid pos]
+            (let [cell (get grid pos)
+                  cross-cells (map #(get grid %) (cross-spaces pos))
+                  cross-values (set (remove nil? (map #(if (= 1 (count %)) (first %)) cross-cells)))
+                  new-possibles (set (remove cross-values cell))]
+              (assoc grid pos new-possibles)
+              ))
+          grid
+          (for [x (range 4) y (range 4)] [x y])))
+
+(defn outputize [grid]
+  (vec
+   (for [j (range 4)]
+     (vec
+      (for [i (range 4)]
+        (first (get grid [i j])))))))
+
+(defn apply-clues [grid clues]
+  (let [clue-map (apply merge (map-indexed (fn [i v] {i v}) clues))]
+    (reduce (fn [grid [clue-index clue]]
+              (if (zero? clue)
+                grid
+                (reduce (fn [grid [pos cell]]
+                          (assoc grid pos cell))
+                        grid
+                        (map list (get-spaces-for clue-index) (make-grid-cells (possible-sequences clue (get-cells-for grid clue-index)))))))
+            grid
+            clue-map)))
+
+(defn solve-puzzle [clues]
+  (loop [grid (apply-clues empty-grid clues)]
+    (if (every? (comp #(= 1 %) count second) grid)
+      (outputize grid)
+      (recur (reduce-grid grid)))))
+
+;; (let [clues [0 2 0 0 0 3 0 0 0 1 0 0 0 0 1 2]]
 ;;                  (solve-puzzle clues))
