@@ -296,15 +296,15 @@
   (string/join
    "\n"
    (concat
-    (list (str " " (string/join (for [i (range 4)] (no-zero (get-clue-for clues [:column i 0]))))))
+    (list (str " " (string/join (for [i (range 4)] (format "%11s" (no-zero (get-clue-for clues [:column i 0])))))))
     (for [j (range 4)]
       (string/join
        (concat
-        (list (no-zero (get-clue-for clues [:row j 0])))
+        (list (no-zero (get-clue-for clues [:row j 0])) " ")
         (for [i (range 4)]
-          (first (get grid [i j])))
-        (list (no-zero (get-clue-for clues [:row j 3]))))))
-    (list (str " " (string/join (for [i (range 4)] (no-zero (get-clue-for clues [:column i 3])))))))))
+          (format "%11s" (get grid [i j])))
+        (list (no-zero (get-clue-for clues [:row j 3])) " "))))
+    (list (str " " (string/join (for [i (range 4)] (format "%11s" (no-zero (get-clue-for clues [:column i 3]))))))))))
 
 (def empty-grid (into {} (for [i (range 4) j (range 4)] [[i j] #{1 2 3 4}])))
 
@@ -354,26 +354,8 @@
 (defn possible-sequences [clue quad]
   (filter #(= clue (count-visible %)) (possible-combinations quad)))
 
-(defn reduce-grid [grid]
-  (reduce (fn [grid pos]
-            (let [cell (get grid pos)
-                  cross-cells (map #(get grid %) (cross-spaces pos))
-                  cross-values (set (remove nil? (map #(if (= 1 (count %)) (first %)) cross-cells)))
-                  new-possibles (set (remove cross-values cell))]
-              (assoc grid pos new-possibles)
-              ))
-          grid
-          (for [x (range 4) y (range 4)] [x y])))
-
-(defn outputize [grid]
-  (vec
-   (for [j (range 4)]
-     (vec
-      (for [i (range 4)]
-        (first (get grid [i j])))))))
-
 (defn apply-clues [grid clues]
-  (let [clue-map (apply merge (map-indexed (fn [i v] {i v}) clues))]
+  (let [clue-map (zipmap (iterate inc 0) clues)]
     (reduce (fn [grid [clue-index clue]]
               (if (zero? clue)
                 grid
@@ -384,11 +366,62 @@
             grid
             clue-map)))
 
-(defn solve-puzzle [clues]
-  (loop [grid (apply-clues empty-grid clues)]
-    (if (every? (comp #(= 1 %) count second) grid)
-      (outputize grid)
-      (recur (reduce-grid grid)))))
+(defn reduce-grid [grid clues]
+  (reduce (fn [grid pos]
+            (let [cell (get grid pos)
+                  cross-cells (map #(get grid %) (cross-spaces pos))
+                  cross-values (set (remove nil? (map #(if (= 1 (count %)) (first %)) cross-cells)))
+                  new-possibles (set (remove cross-values cell))]
+              (assoc grid pos new-possibles)))
+          (apply-clues grid clues)
+          (for [x (range 4) y (range 4)] [x y])))
 
-;; (let [clues [0 2 0 0 0 3 0 0 0 1 0 0 0 0 1 2]]
-;;                  (solve-puzzle clues))
+(defn outputize [grid]
+  (vec
+   (for [j (range 4)]
+     (vec
+      (for [i (range 4)]
+        (first (get grid [i j])))))))
+
+(defn solve-puzzle [clues]
+  (loop [grid empty-grid
+         previous-grids []]
+    (if (every? (comp #(= 1 %) count second) grid)
+        (outputize grid)
+        (recur (reduce-grid grid clues) (conj previous-grids grid)))))
+
+
+
+
+;; Kata: Strip Comments
+(defn strip-comments [text comment-symbols]
+  (let [lines (string/split text #"\n")
+        symbols (string/join comment-symbols)
+        pattern (re-pattern (str "(.*?)([" symbols "].*)?"))]
+    (string/join
+     "\n"
+     (for [line lines]
+       (string/trimr (second (re-matches pattern line)))))))
+
+
+
+
+;; Kata: Sum of Intervals
+(defn overlap? [[a b] [c d]]
+  (or (<= a c b)
+      (<= a d b)
+      (<= c a d)
+      (<= c b d)))
+
+(defn combine-intervals [[a b] [c d]]
+  [(min a c) (max b d)])
+
+(defn sum-intervals [intervals]
+  (let [min-intervals (reduce (fn [acc i]
+                                (let [overlap (first (for [x acc :when (overlap? i x)] x))]
+                                  (if overlap
+                                    (conj (disj acc overlap) (combine-intervals i overlap))
+                                    (conj acc i))))
+                              #{}
+                              (sort intervals))]
+    (apply + (map (fn [[a b]] (- b a)) min-intervals))))
