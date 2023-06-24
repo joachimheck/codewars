@@ -425,3 +425,39 @@
                               #{}
                               (sort intervals))]
     (apply + (map (fn [[a b]] (- b a)) min-intervals))))
+
+
+
+
+;; Kata: Sum by Factors
+(defn prime? [n]
+  (cond (= 2 n) true
+        (even? n) false
+        :else (nil? (first (for [i (iterate inc 3)
+                                 :while (<= i (Math/sqrt n))
+                                 :when (= 0 (rem n i))] i)))))
+
+(defn primes []
+  (concat '(2) (filter prime? (iterate inc 3))))
+
+(defn prime-factors [n]
+  (let [n (Math/abs n)
+        prime-factors (reduce (fn [factors p]
+                                (if (> p (/ n 2))
+                                  (reduced factors)
+                                  (if (= 0 (rem n p))
+                                    (conj factors p)
+                                    factors)))
+                              []
+                              (primes))]
+    (if (and (empty? prime-factors) (not= 1 n))
+      [n]
+      prime-factors)))
+
+(defn sum-of-divided [lst]
+  (sort
+   (apply merge-with +
+          (for [f (set (flatten (map prime-factors lst)))
+                n lst
+                :when (= 0 (rem n f))]
+            {f n}))))
