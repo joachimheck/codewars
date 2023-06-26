@@ -466,83 +466,27 @@
 
 
 ;; Kata: Square into Squares
-;; (def cache (atom {}))
-;; (def cache-hits (atom 0))
-;; (def cache-misses (atom 0))
-
-;; (defn decompose-inner [n sum]
-;;   (if (nil? (get @cache [n sum]))
-;;     (do
-;;       (swap! cache-misses inc)
-;;       (reset! cache (assoc @cache
-;;                            [n sum]
-;;                            (if (= sum 0)
-;;                              [[]]
-;;                              (apply concat
-;;                                     (for [x (reverse (range (min n (inc (Math/sqrt sum)))))]
-;;                                       (map #(conj % x) (decompose-inner x (- sum (* x x))))))))))
-;;     (swap! cache-hits inc))
-;;   (get @cache [n sum]))
-
-;; (defn decompose [n]
-;;   (println "decompose" n)
-;;   (reset! cache {})
-;;   (reset! cache-hits 0)
-;;   (reset! cache-misses 0)
-;;   (let [result (seq (first (decompose-inner n (* n n))))]
-;;     (printf "Cache hit rate: %d (%d %d)\n" (int (* 100 (/ @cache-hits (+ @cache-hits @cache-misses)))) @cache-hits @cache-misses)
-;;     result))
-
-
-(defn decompose-inner [n sum]
-  ;; (println "decompose-inner" n sum)
+(defn decompose-simple-inner [n sum]
   (if (= sum 0)
     [[]]
     (apply concat
            (for [x (reverse (range (min n (inc (Math/sqrt sum)))))]
-             (map #(conj % x) (decompose-inner x (- sum (* x x))))))))
+             (map #(conj % x) (decompose-simple-inner x (- sum (* x x))))))))
 
-(defn decompose [n]
+(defn decompose-simple [n]
   (println "decompose" n)
-  (seq (first (decompose-inner n (* n n)))))
-
-(defn sum-of-squares [xs]
-  ;; (println "sum-of-squares" xs)
-  (reduce (fn [acc x] (+ acc (* x x))) 0 xs))
+  (seq (first (decompose-simple-inner n (* n n)))))
 
 
-
-(defn decompose-inner-2 [n sum]
-  ;; (println "decompose-inner" n sum)
+(defn decompose-inner [n sum]
   (if (= sum 0)
     [[]]
     (first
-           (for [x (reverse (range (min n (inc (Math/sqrt sum)))))
-                 :let [diff (- sum (* x x))]
-                 :when (and (>= diff 0)
-                            (and (< x 1290) (<= diff (/ (* (long x) (inc (long x)) (inc (* 2 (long x)))) 6))))
-                 decomposed (decompose-inner-2 x diff)
-                 :let [
-                       ;; _ (println x decomposed sum (sum-of-squares decomposed)
-                       ;;            (= (- sum (* x x)) (sum-of-squares decomposed)))
-                       ]
-                 :when (= diff (sum-of-squares decomposed))]
-             (do
-               ;; (println "conj" decomposed x)
-               (list (conj decomposed x)))
+       (for [x (iterate dec (dec (min n (inc (int (Math/sqrt sum))))))
+               :while (> x 0)
+               :let [diff (- sum (* x x))]
+               decomposed (decompose-inner x diff)]
+           (list (conj decomposed x))))))
 
-;;              (let [
-;;                    ;; (filter #(= sum (sum-of-squares %)) (decompose-inner-2 x (- sum (* x x))))
-;;                    decomposed (decompose-inner-2 x (- sum (* x x)))
-;;                    filtered (filter #(and (not-empty %) (= (sum-of-squares %) (- sum (* x x)))) decomposed)
-;;                    ;; _ (println "sum" sum "decomposed" decomposed (- sum (* x x))
-;;                    ;;            "filtered" filtered)
-;; ]
-;;                (map (fn [d]
-;;                      ;; (println decomposed "conj" d x)
-;;                      (conj d x)) decomposed))
-             ))))
-
-(defn decompose-2 [n]
-  (println "decompose" n)
-  (first (decompose-inner-2 n (* n n))))
+(defn decompose [n]
+  (first (decompose-inner n (* n n))))
