@@ -490,3 +490,98 @@
 
 (defn decompose [n]
   (first (decompose-inner n (* n n))))
+
+
+
+
+;; Kata: Fabergé Easter Eggs crush test
+(defn height
+  "Given n eggs and m tries, what's the greatest height
+  for which the safe drop height for the eggs can be calculated?"
+ [n m]
+  
+  )
+
+
+;; n eggs, m tries
+
+;; with 1 egg, move incrementally up from zero: 1, 2, 3...
+;;   height = m
+
+;; with 2 eggs, each round, increase the height by the number of tries remaining.
+;;   height = sum (i from 1 to m) i
+
+;; with 3 eggs, each round, increase the height by the sum of the number of tries remaining.
+
+;; n=3 m=5
+
+;; [3 5] try ?
+;; no:  [2 4] try 4
+;;      no:  [1 3] try 1
+;;           no: answer: 0
+;;           yes: [1 2] try 2
+;;                no:  answer: 1
+;;                yes: [1 1] try 3
+;;                     no:  answer: 2
+;; 		    yes: answer: 3
+;;      yes: [2 3] try 7
+;;           no: [1 2] try 5
+;;               no:  answer 4
+;; 	      yes: [1 1] try 6
+;;                    no:  answer 5
+;; 		   yes: answer 6
+;; yes: [2 3] try 
+
+
+;; n=3 m=1 height = 1
+;; n=3 m=2 height = 3
+;; n=3 m=3 height = 5
+;; n=3 m=4 height = 
+
+;; [3 2] try 2
+;; no:  [2 1] try 1
+;;      yes: [2 0] answer 1
+;;      no:  [1 0] answer 0
+;; yes: [3 1] try 3
+;;      yes: [3 0] answer 3
+;;      no:  [2 0] answer 2
+
+;; [3 3] try 3
+;; no:  [2 2] try 1
+;;      no:  [1 1] answer 0
+;;      yes: [2 1] try 2
+;;           no:  [1 0] answer 1
+;; 	  yes: [2 1] answer 2
+;; yes: [3 2] try 4
+;;      no:  [2 1] answer 3
+;;      yes: [3 1] try 5
+;;           no:  [2 0] answer 4
+;; 	  yes: [3 0] answer 5
+
+;; [3 4] try 7
+;; no:  [2 3] try 3
+;;      no:  [1 2] try 1
+;;           no:  [0 1] answer 0
+;; 	  yes: [1 1] try 2
+;;                no:  [0 0] answer 1
+;; 	       yes: [1 0] answer 2
+;;      yes: [2 2] try 5
+;;           no:  [1 1] try 4
+;; 	       no:  [0 0] answer 3
+;; 	       yes: [1 0] answer 4
+;; 	  yes: [2 1] try 6
+;; 	       no:  [1 0] answer 5
+;; 	       yes: [2 0] answer 6
+;; yes: [3 3] try 10
+;;      no:  [1 2] try 8
+;;           no:  [0 1] answer 7
+;; 	  yes: [1 1] try 9
+;; 	       no:  [0 0] answer 8
+;; 	       yes: [1 0] answer 9
+;;      yes: [2 2] try 12
+;;           no:  [1 1] try 11
+;;                no:  [0 0] answer 10
+;; 	       yes: [1 0] answer 11
+;; 	  yes: [2 1] try 13
+;; 	       no:  [1 0] answer 12
+;; 	       yes: [2 0] answer 13
