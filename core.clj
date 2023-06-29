@@ -534,3 +534,34 @@
             [1 1]
             (iterate inc 1))))
 
+
+
+
+;; Kata: Getting Along with Integer Partitions
+(def enum-cache (atom {}))
+
+(defn enum-memo [n]
+  (if-not (get @enum-cache n)
+    (reset! enum-cache
+                (assoc @enum-cache n
+                       (if (= n 0)
+                         '([])
+                         (apply concat
+                                (for [i (range n)]
+                                  (map #(apply conj [(- n i)] %)
+                                       (filter #(or (empty? %) (<= (first %) (- n i))) (enum-memo i)))))))))
+  (get @enum-cache n))
+
+(defn prod-memo [n]
+  (sort (distinct (map #(reduce * %) (enum-memo n)))))
+
+(defn part [n]
+  (reset! enum-cache {})
+  (let [p (prod-memo n)
+        size (count p)
+        range (- (last p) (first p))
+        average (/ (reduce + p) size)
+        median (if (odd? size)
+                 (nth p (/ (dec size) 2))
+                 (/ (+ (nth p (/ size 2)) (nth p (dec (/ size 2)))) 2))]
+    (format "Range: %d Average: %.2f Median: %.2f" range (double average) (double median))))
