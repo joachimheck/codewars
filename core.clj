@@ -521,131 +521,16 @@
 ;;  3: 1  4  7  8
 ;;  4: 1  5 11 15 16
 
-;; (defn triangle [row col]
-;;   {:pre [(<= col row)]}
-;;   (cond (= col row)
-;;           (int (Math/pow 2 row))
-;;           (= col 0)
-;;           1
-;;           :else
-;;           (+ (triangle (dec row) (dec col)) (triangle (dec row) col))))
-
-(defn triangle-row [n]
-  ;; when k=0, (n k) = 1
-  (loop [k 1
-         row [1]]
-    (if (> k n)
-      row
-      (recur (inc k)
-             (conj row (* (last row) (/ (- (inc n) k) k)))))))
-
-(defn triangle-sum [row col]
-  (nth (reductions + (triangle-row row)) col))
-
+;; The result comes from Bernoulli's triangle (thanks, oeis.org!)
+;; The Bernoulli value is the partial sum of a row of Pascal's triangle.
 (defn height [n m]
-  (dec (triangle-sum m (min m n))))
+  (let [row m
+        col (min n m)]
+    (reduce (fn [[sum prev] k]
+              (if (> k col)
+                (reduced (dec sum))
+                (let [term (* prev (/ (- (inc row) k) k))]
+                  [(+ sum term) term])))
+            [1 1]
+            (iterate inc 1))))
 
-;; (def cache (atom {}))
-;; (def cache-hits (atom 0))
-;; (def cache-misses (atom 0))
-
-;; (defn build-tree-cached [eggs tries]
-;;   (if-not (get @cache [eggs tries])
-;;     (do
-;;       (swap! cache-misses inc)
-;;       (reset! cache (assoc @cache [eggs tries]
-;;                            (cond (or (= eggs 0) (= tries 0))
-;;                                  (list {:eggs eggs :tries tries :floors 0})
-;;                                  (or (= eggs 1) (= tries 1))
-;;                                  (list {:eggs eggs :tries tries :floors (inc tries)} '() '())
-;;                                  :else
-;;                                  (let [left (build-tree-cached eggs (dec tries))
-;;                                        right (build-tree-cached (dec eggs) (dec tries))]
-;;                                    ;; (println left right (:floors (first left)) (:floors (first right)))
-;;                                    (list {:eggs eggs :tries tries :floors (+ (:floors (first left)) (:floors (first right)))} left right))))))
-;;     (swap! cache-hits inc))
-;;   (get @cache [eggs tries]))
-
-;; (defn height-cached [n m]
-;;   (reset! cache {})
-;;   (reset! cache-hits 0)
-;;   (reset! cache-misses 0)
-;;   (let [result (dec (:floors (first (build-tree-cached n m))))]
-;;     (println "Cache hit rate" (int (* 100 (/ @cache-hits (+ @cache-hits @cache-misses)))) ":" @cache-hits @cache-misses)))
-
-
-;; n eggs, m tries
-
-;; with 1 egg, move incrementally up from zero: 1, 2, 3...
-;;   height = m
-
-;; with 2 eggs, each round, increase the height by the number of tries remaining.
-;;   height = sum (i from 1 to m) i
-
-;; [2 2]
-;; yes: [2 1]
-;;      yes: [2 0] answer 3
-;;      no : [1 0] answer 2
-;; no : [1 1]
-;;      yes: [1 0] answer 1
-;;      no : [0 0] answer 0
-
-;; with 3 eggs, each round, increase the height by the sum of the number of tries remaining.
-
-;; levels = (min m (inc n))
-;; per-level = m
-
-
-
-;; n=3 m=1 height = 1
-;; n=3 m=2 height = 3
-;; n=3 m=3 height = 5
-;; n=3 m=4 height = 13
-
-;; [3 2] try 2
-;; no:  [2 1] try 1
-;;      no:  [1 0] answer 0
-;;      yes: [2 0] answer 1
-;; yes: [3 1] try 3
-;;      no:  [2 0] answer 2
-;;      yes: [3 0] answer 3
-
-;; [3 3] try 3
-;; no:  [2 2] try 1
-;;      no:  [1 1] answer 0
-;;      yes: [2 1] try 2
-;;           no:  [1 0] answer 1
-;;           yes: [2 1] answer 2
-;; yes: [3 2] try 4
-;;      no:  [2 1] answer 3
-;;      yes: [3 1] try 5
-;;           no:  [2 0] answer 4
-;;           yes: [3 0] answer 5
-
-;; [3 4] try 7
-;; no:  [2 3] try 3
-;;      no:  [1 2] try 1
-;;           no:  [0 1] answer 0
-;;           yes: [1 1] try 2
-;;                no:  [0 0] answer 1
-;;                yes: [1 0] answer 2
-;;      yes: [2 2] try 5
-;;           no:  [1 1] try 4
-;;                no:  [0 0] answer 3
-;;                yes: [1 0] answer 4
-;;           yes: [2 1] try 6
-;;                no:  [1 0] answer 5
-;;                yes: [2 0] answer 6
-;; yes: [3 3] try 10
-;;      no:  [1 2] try 8
-;;           no:  [0 1] answer 7
-;;           yes: [1 1] try 9
-;;                no:  [0 0] answer 8
-;;                yes: [1 0] answer 9
-;;      yes: [2 2] try 12
-;;           no:  [1 1] try 11
-;;                no:  [0 0] answer 10
-;;                yes: [1 0] answer 11
-;;           yes: [2 1] try 13
-;;                no:  [1 0] answer 12
-;;                yes: [2 0] answer 13
