@@ -565,3 +565,32 @@
                  (nth p (/ (dec size) 2))
                  (/ (+ (nth p (/ size 2)) (nth p (dec (/ size 2)))) 2))]
     (format "Range: %d Average: %.2f Median: %.2f" range (double average) (double median))))
+
+
+
+
+;; Kata: Smallest Possible Sum
+(defn solution [arr]
+  (loop [s (into (sorted-set) arr)]
+    (if (apply = s)
+      (* (count arr) (first s))
+      (recur (into (sorted-set)
+                   (map (fn [[a b]] (if (and b (> a b)) (- a b) a))
+                        (partition-all 2 1 (rseq s))))))))
+
+
+
+
+;; Kata: Counting Change Combinations
+(defn count-change-inner [money coins]
+  (if (= money 0)
+    [[]]
+    (apply concat
+           (for [c (reverse (sort coins)) :when (<= c money)]
+             (map #(conj % c)
+                  (count-change-inner (- money c) coins))))))
+
+(defn count-change
+  "Gives the number of ways to make change for some money given a set of coins"
+  [money coins]
+  (count (distinct (map sort (count-change-inner money coins)))))
