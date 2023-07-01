@@ -594,3 +594,54 @@
   "Gives the number of ways to make change for some money given a set of coins"
   [money coins]
   (count (distinct (map sort (count-change-inner money coins)))))
+
+
+
+
+;; Kata: Total increasing or decreasing numbers up to a power of 10
+(defn digits [n]
+  (if (< n 10)
+    [n]
+    (conj (digits (quot n 10)) (mod n 10))))
+
+(defn increasing? [n]
+  (apply <= (digits n)))
+
+(defn decreasing? [n]
+  (apply >= (digits n)))
+
+(defn from-digits [ds]
+  (let [size (count ds)]
+    (apply +
+           (for [i (range size)]
+             (long (* (get ds i) (Math/pow 10 (- (dec size) i))))))))
+
+(defn next-increasing [n]
+  (let [ds (digits n)
+        bad-digit (inc (first (first (filter (fn [[i [a b]]] (> a b)) (map-indexed list (partition 2 1 ds))))))]
+    ;; (println "digits" ds "bad-digit" bad-digit)
+    (from-digits (assoc ds bad-digit (get ds (dec bad-digit))))))
+
+(defn next-decreasing [n]
+  (let [ds (digits n)
+        bad-digit (inc (first (first (filter (fn [[i [a b]]] (< a b)) (map-indexed list (partition 2 1 ds))))))]
+    ;; (println "digits" ds "bad-digit" bad-digit)
+    (from-digits (assoc ds (dec bad-digit) (get ds bad-digit) bad-digit 0))))
+
+(defn next-inc-or-dec [n]
+  (min (next-increasing n) (next-decreasing n)))
+
+(defn count-inc-or-dec [n-max]
+  (loop [n 0
+         total 0]
+    (if (>= n n-max)
+      total
+      (if (or (increasing? n) (decreasing? n))
+        (recur (inc n) (inc total))
+        (recur (next-inc-or-dec n) total)))))
+
+(defn total-inc-dec [x]
+  (count-inc-or-dec (Math/pow 10 x)))
+
+;; TODO: compute the length of the sequence of increasing or decreasing numbers
+;; and add that to n instead of 1 in the loop.
