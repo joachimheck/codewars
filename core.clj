@@ -616,22 +616,25 @@
            (for [i (range size)]
              (long (* (get ds i) (Math/pow 10 (- (dec size) i))))))))
 
+(defn first-digit-that [ds cmp-fn]
+  (inc (first (first (filter (fn [[i [a b]]] (cmp-fn a b)) (map-indexed list (partition 2 1 ds)))))))
+
 (defn next-increasing [n]
   (let [ds (digits n)
-        bad-digit (inc (first (first (filter (fn [[i [a b]]] (> a b)) (map-indexed list (partition 2 1 ds))))))]
-    ;; (println "digits" ds "bad-digit" bad-digit)
-    (from-digits (assoc ds bad-digit (get ds (dec bad-digit))))))
+        flip-digit (first-digit-that ds >)]
+    ;; (println "digits" ds "flip-digit" flip-digit)
+    (from-digits (assoc ds flip-digit (get ds (dec flip-digit))))))
 
 (defn next-decreasing [n]
   (let [ds (digits n)
-        bad-digit (inc (first (first (filter (fn [[i [a b]]] (< a b)) (map-indexed list (partition 2 1 ds))))))]
-    ;; (println "digits" ds "bad-digit" bad-digit)
-    (from-digits (assoc ds (dec bad-digit) (get ds bad-digit) bad-digit 0))))
+        flip-digit (first-digit-that ds <)]
+    ;; (println "digits" ds "flip-digit" flip-digit)
+    (from-digits (assoc ds (dec flip-digit) (get ds flip-digit) flip-digit 0))))
 
 (defn next-inc-or-dec [n]
   (min (next-increasing n) (next-decreasing n)))
 
-(defn count-inc-or-dec [n-max]
+(defn count-inc-or-dec-old [n-max]
   (loop [n 0
          total 0]
     (if (>= n n-max)
@@ -640,8 +643,49 @@
         (recur (inc n) (inc total))
         (recur (next-inc-or-dec n) total)))))
 
+(defn total-inc-dec-old [x]
+  (count-inc-or-dec-old (Math/pow 10 x)))
+
+(defn pad-vec [l v]
+  (if (>= (count v) l)
+    v
+    (apply conj (vec (repeat (- l (count v)) 0)) v)))
+
+(defn increasing-digits? [ds]
+  (apply <= ds))
+
+(defn decreasing-digits? [ds]
+  (apply >= ds))
+
+(defn increasing-sequence-length [ds]
+  (let [[a b] (take-last 2 (pad-vec 2 ds))]
+    (inc (- (- 9 a) (- b a)))))
+
+(defn decreasing-sequence-length [ds]
+  (let [[a b] (take-last 2 (pad-vec 2 ds))]
+    (inc (- a b))))
+
+(defn count-inc-or-dec [n-max]
+  (if (<= n-max 100)
+    (long n-max)
+    (loop [n 101
+           total 101]
+      (if (>= n n-max)
+        total
+        (let [ds (digits n)]
+          (cond (increasing-digits? ds)
+                (let [seq-length (increasing-sequence-length ds)]
+                  (recur (+ n seq-length) (+ total seq-length)))
+                (decreasing-digits? ds)
+                (let [seq-length (decreasing-sequence-length ds)]
+                  (recur (+ n seq-length) (+ total seq-length)))
+                :else
+                (recur (next-inc-or-dec n) total)))))))
+
 (defn total-inc-dec [x]
   (count-inc-or-dec (Math/pow 10 x)))
 
-;; TODO: compute the length of the sequence of increasing or decreasing numbers
-;; and add that to n instead of 1 in the loop.
+;; TODO: This wasn't enough. I tried looking for a pattern and there is one
+;; grouping by hundreds up to 1000, but up to 2000 the pattern breaks down,
+;; so maybe there's another way to group the numbers.
+
