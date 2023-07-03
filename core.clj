@@ -689,3 +689,29 @@
 ;; grouping by hundreds up to 1000, but up to 2000 the pattern breaks down,
 ;; so maybe there's another way to group the numbers.
 
+;; decreasing between 1000 and 1111:
+;; max digit is 1 (first digit), so possible second digits are 0 and 1
+;; only 1000 works with second digit 0
+;; with second digit 1, 1100 and 1110 and 1111 work
+
+;; 1000 1001 1010 1011 1100 1101 1110 1111
+
+;; 1000 1100 1110 1111
+;; 2000 2100 2110 2111 2200 2210 2211 2220 2221 2222
+
+;; 2000
+;; 2100 2110 2111
+;; 2200 2210 2211 2220 2221 2222
+
+(defn list-decreasing-n-digits [max-d digits]
+  (if (= digits 0)
+    '(())
+    (apply concat
+           (for [d (range (inc max-d))]
+             (map #(concat (list d) %) (list-decreasing-n-digits d (dec digits)))))))
+
+(defn count-decreasing-n-digits [max-d digits]
+  (if (= digits 1)
+    (list (inc max-d))
+    (for [d (range (inc max-d))]
+             (map #(* d %) (count-decreasing-n-digits d (dec digits))))))
