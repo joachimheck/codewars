@@ -694,24 +694,62 @@
 ;; only 1000 works with second digit 0
 ;; with second digit 1, 1100 and 1110 and 1111 work
 
-;; 1000 1001 1010 1011 1100 1101 1110 1111
+;; 0
+;; 1 0
+;; 2 1 0
+;; 3 2 1 0
 
-;; 1000 1100 1110 1111
-;; 2000 2100 2110 2111 2200 2210 2211 2220 2221 2222
+;; 00
+;; 10 11
+;; 20 21 22
+;; 30 31 32 33
+
+;; 100
+;; 110 111
+
+;; 200
+;; 210 211
+;; 220 221 222
+
+;; 300
+;; 310 311
+;; 320 321 322
+;; 330 331 332 333
+
+;; 0000
+
+;; 1000
+;; 1100 1110 1111
 
 ;; 2000
 ;; 2100 2110 2111
 ;; 2200 2210 2211 2220 2221 2222
 
-(defn list-decreasing-n-digits [max-d digits]
+
+(defn list-decreasing-n-digits [max-n digits]
   (if (= digits 0)
     '(())
     (apply concat
-           (for [d (range (inc max-d))]
+           (for [d (range (inc max-n))]
              (map #(concat (list d) %) (list-decreasing-n-digits d (dec digits)))))))
 
-(defn count-decreasing-n-digits [max-d digits]
-  (if (= digits 1)
-    (list (inc max-d))
-    (for [d (range (inc max-d))]
-             (map #(* d %) (count-decreasing-n-digits d (dec digits))))))
+(defn inner [max-n digits]
+  (if (or (= max-n 0) (< digits 3))
+    (inc max-n)
+    (+ (reduce (fn [acc n] (+ acc (count-decreasing-n-digits n (dec digits))))
+               0
+               (range 1 (inc max-n)))
+       (if (> max-n 1)
+         (count-decreasing-n-digits (dec max-n) digits)
+         0))))
+
+(defn count-decreasing-n-digits [max-n digits]
+  (inc (inner max-n digits)))
+
+;; [2 4] = [2 3] + [1 3] + [0 3] + [1 4]
+;; [2 4] = [2 3] + [1 3] + [0 3] + [1 3] + [0 3] + [0 4]
+;;         [max-n (dec digits)] + [(dec max-n) (dec digits)] [(- max-n 2) (dec digits)] [(dec max-n) digits]
+
+;; TODO: these don't match:
+;; (list-decreasing-n-digits 2 4)
+;; (count-decreasing-n-digits 2 4)
