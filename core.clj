@@ -614,7 +614,7 @@
   (let [size (count ds)]
     (apply +
            (for [i (range size)]
-             (long (* (get ds i) (Math/pow 10 (- (dec size) i))))))))
+             (long (* (nth ds i) (Math/pow 10 (- (dec size) i))))))))
 
 (defn first-digit-that [ds cmp-fn]
   (inc (first (first (filter (fn [[i [a b]]] (cmp-fn a b)) (map-indexed list (partition 2 1 ds)))))))
@@ -733,23 +733,88 @@
            (for [d (range (inc max-n))]
              (map #(concat (list d) %) (list-decreasing-n-digits d (dec digits)))))))
 
-(defn inner [max-n digits]
-  (if (or (= max-n 0) (< digits 3))
-    (inc max-n)
-    (+ (reduce (fn [acc n] (+ acc (count-decreasing-n-digits n (dec digits))))
-               0
-               (range 1 (inc max-n)))
-       (if (> max-n 1)
-         (count-decreasing-n-digits (dec max-n) digits)
-         0))))
+(defn list-increasing-n-digits [max-n digits]
+  (if (= digits 0)
+    '(())
+    (apply concat
+           (for [d (range (inc max-n))]
+             (map #(concat % (list d)) (list-increasing-n-digits d (dec digits)))))))
+
+(defn list-decreasing [max-n digits]
+  (cond (= digits 0)
+        '(())
+        ;; (= max-n 0)
+        ;; '((0))
+        :else
+        (apply concat
+               (for [d (range max-n)]
+                 (map #(concat (list d) %) (list-decreasing d (dec digits)))))))
+
+(defn list-inc-dec [max-n digits]
+  (if (= digits 0)
+    '(())
+    (apply concat
+           (for [d (range 10)]
+             (map #(concat % (list d)) (list-increasing-n-digits d (dec digits)))
+             (map #(concat % (list d)) (list-increasing-n-digits d (dec digits)))
+))))
 
 (defn count-decreasing-n-digits [max-n digits]
-  (inc (inner max-n digits)))
+  ;; (println "count-decreasing-n-digits" max-n digits)
+  (cond (= digits 0)
+        1
+        (= digits 1)
+        (inc max-n)
+        :else
+        (reduce (fn [acc n] (+ acc (count-decreasing-n-digits n (dec digits))))
+                0
+                (range (inc max-n)))))
 
-;; [2 4] = [2 3] + [1 3] + [0 3] + [1 4]
-;; [2 4] = [2 3] + [1 3] + [0 3] + [1 3] + [0 3] + [0 4]
-;;         [max-n (dec digits)] + [(dec max-n) (dec digits)] [(- max-n 2) (dec digits)] [(dec max-n) digits]
+(defn count-increasing-n-digits [max-n digits]
+  ;; (println "count-decreasing-n-digits" max-n digits)
+c  (cond (= digits 0)
+        1
+        (= digits 1)
+        (inc max-n)
+        :else
+        (reduce (fn [acc n] (+ acc (count-increasing-n-digits n (dec digits))))
+                0
+                (range (inc max-n)))))
 
-;; TODO: these don't match:
-;; (list-decreasing-n-digits 2 4)
-;; (count-decreasing-n-digits 2 4)
+(defn total-inc-dec [digits]
+  (cond (= digits 0)
+        1
+        (= digits 1)
+        10
+        (= digits 2)
+        100
+        :else
+        (+ 100
+           (apply +
+                  (for [d (range 3 (inc digits))]
+                    (- (* 2 (count-decreasing-n-digits 9 d)) 10))))))
+
+(defn count-inc [n digits]
+  (if (= digits 1)
+    (- 10 n)
+    (apply + 
+           (for [d (range n 10)]
+             (count-inc d (dec digits))))))
+
+(defn count-dec [n digits]
+  (if (= digits 1)
+    (inc n)
+    (apply +
+           (for [d (range (inc n))]
+             (count-dec d (dec digits))))))
+
+(defn count-inc-dec [digits]
+  (if (= digits 0)
+    0
+    (- (+ (count-inc 0 digits)
+          (count-dec 9 digits)
+          ;; (count-inc-dec (dec digits))
+          )
+       (* 10 digits))))
+
+;; (count (let [p 2] (for [i (range (Math/pow 10 p)) :let [ds (pad-vec p (digits i))] :when (decreasing-digits? ds)] ds)))
