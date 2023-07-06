@@ -599,222 +599,38 @@
 
 
 ;; Kata: Total increasing or decreasing numbers up to a power of 10
-(defn digits [n]
-  (if (< n 10)
-    [n]
-    (conj (digits (quot n 10)) (mod n 10))))
 
-(defn increasing? [n]
-  (apply <= (digits n)))
+(def inc-dec-cache (atom {}))
 
-(defn decreasing? [n]
-  (apply >= (digits n)))
+(defn count-dec-first-and-digits [n digits]
+  (or (get @inc-dec-cache [n digits :dec])
+      (do (reset! inc-dec-cache
+                  (assoc @inc-dec-cache
+                         [n digits :dec]
+                         (if (= digits 1)
+                           1
+                           (apply + (for [i (range (inc n))]
+                                      (count-dec-first-and-digits i (dec digits)))))))
+          (get @inc-dec-cache [n digits :dec]))))
 
-(defn from-digits [ds]
-  (let [size (count ds)]
-    (apply +
-           (for [i (range size)]
-             (long (* (nth ds i) (Math/pow 10 (- (dec size) i))))))))
+(defn count-inc-first-and-digits [n digits]
+  (or (get @inc-dec-cache [n digits :inc])
+      (do (reset! inc-dec-cache
+                  (assoc @inc-dec-cache
+                         [n digits :inc]
+                         (if (= digits 1)
+                           1
+                           (apply + (for [i (range n 10)]
+                                      (count-inc-first-and-digits i (dec digits)))))))
+          (get @inc-dec-cache [n digits :inc]))))
 
-(defn first-digit-that [ds cmp-fn]
-  (inc (first (first (filter (fn [[i [a b]]] (cmp-fn a b)) (map-indexed list (partition 2 1 ds)))))))
+(defn total-inc-dec [p]
+  (reset! inc-dec-cache {})
+  (let [digits p]
+    (inc
+     (apply +
+            (for [d (range 1 (inc digits))]
+              (apply +
+                     (for [n (range 1 10)]
+                       (dec (+ (count-dec-first-and-digits n d) (count-inc-first-and-digits n d))))))))))
 
-(defn next-increasing [n]
-  (let [ds (digits n)
-        flip-digit (first-digit-that ds >)]
-    ;; (println "digits" ds "flip-digit" flip-digit)
-    (from-digits (assoc ds flip-digit (get ds (dec flip-digit))))))
-
-(defn next-decreasing [n]
-  (let [ds (digits n)
-        flip-digit (first-digit-that ds <)]
-    ;; (println "digits" ds "flip-digit" flip-digit)
-    (from-digits (assoc ds (dec flip-digit) (get ds flip-digit) flip-digit 0))))
-
-(defn next-inc-or-dec [n]
-  (min (next-increasing n) (next-decreasing n)))
-
-(defn count-inc-or-dec-old [n-max]
-  (loop [n 0
-         total 0]
-    (if (>= n n-max)
-      total
-      (if (or (increasing? n) (decreasing? n))
-        (recur (inc n) (inc total))
-        (recur (next-inc-or-dec n) total)))))
-
-(defn total-inc-dec-old [x]
-  (count-inc-or-dec-old (Math/pow 10 x)))
-
-(defn pad-vec [l v]
-  (if (>= (count v) l)
-    v
-    (apply conj (vec (repeat (- l (count v)) 0)) v)))
-
-(defn increasing-digits? [ds]
-  (apply <= ds))
-
-(defn decreasing-digits? [ds]
-  (apply >= ds))
-
-(defn increasing-sequence-length [ds]
-  (let [[a b] (take-last 2 (pad-vec 2 ds))]
-    (inc (- (- 9 a) (- b a)))))
-
-(defn decreasing-sequence-length [ds]
-  (let [[a b] (take-last 2 (pad-vec 2 ds))]
-    (inc (- a b))))
-
-(defn count-inc-or-dec [n-max]
-  (if (<= n-max 100)
-    (long n-max)
-    (loop [n 101
-           total 101]
-      (if (>= n n-max)
-        total
-        (let [ds (digits n)]
-          (cond (increasing-digits? ds)
-                (let [seq-length (increasing-sequence-length ds)]
-                  (recur (+ n seq-length) (+ total seq-length)))
-                (decreasing-digits? ds)
-                (let [seq-length (decreasing-sequence-length ds)]
-                  (recur (+ n seq-length) (+ total seq-length)))
-                :else
-                (recur (next-inc-or-dec n) total)))))))
-
-(defn total-inc-dec [x]
-  (count-inc-or-dec (Math/pow 10 x)))
-
-;; TODO: This wasn't enough. I tried looking for a pattern and there is one
-;; grouping by hundreds up to 1000, but up to 2000 the pattern breaks down,
-;; so maybe there's another way to group the numbers.
-
-;; decreasing between 1000 and 1111:
-;; max digit is 1 (first digit), so possible second digits are 0 and 1
-;; only 1000 works with second digit 0
-;; with second digit 1, 1100 and 1110 and 1111 work
-
-;; 0
-;; 1 0
-;; 2 1 0
-;; 3 2 1 0
-
-;; 00
-;; 10 11
-;; 20 21 22
-;; 30 31 32 33
-
-;; 100
-;; 110 111
-
-;; 200
-;; 210 211
-;; 220 221 222
-
-;; 300
-;; 310 311
-;; 320 321 322
-;; 330 331 332 333
-
-;; 0000
-
-;; 1000
-;; 1100 1110 1111
-
-;; 2000
-;; 2100 2110 2111
-;; 2200 2210 2211 2220 2221 2222
-
-
-(defn list-decreasing-n-digits [max-n digits]
-  (if (= digits 0)
-    '(())
-    (apply concat
-           (for [d (range (inc max-n))]
-             (map #(concat (list d) %) (list-decreasing-n-digits d (dec digits)))))))
-
-(defn list-increasing-n-digits [max-n digits]
-  (if (= digits 0)
-    '(())
-    (apply concat
-           (for [d (range (inc max-n))]
-             (map #(concat % (list d)) (list-increasing-n-digits d (dec digits)))))))
-
-(defn list-decreasing [max-n digits]
-  (cond (= digits 0)
-        '(())
-        ;; (= max-n 0)
-        ;; '((0))
-        :else
-        (apply concat
-               (for [d (range max-n)]
-                 (map #(concat (list d) %) (list-decreasing d (dec digits)))))))
-
-(defn list-inc-dec [max-n digits]
-  (if (= digits 0)
-    '(())
-    (apply concat
-           (for [d (range 10)]
-             (map #(concat % (list d)) (list-increasing-n-digits d (dec digits)))
-             (map #(concat % (list d)) (list-increasing-n-digits d (dec digits)))
-))))
-
-(defn count-decreasing-n-digits [max-n digits]
-  ;; (println "count-decreasing-n-digits" max-n digits)
-  (cond (= digits 0)
-        1
-        (= digits 1)
-        (inc max-n)
-        :else
-        (reduce (fn [acc n] (+ acc (count-decreasing-n-digits n (dec digits))))
-                0
-                (range (inc max-n)))))
-
-(defn count-increasing-n-digits [max-n digits]
-  ;; (println "count-decreasing-n-digits" max-n digits)
-c  (cond (= digits 0)
-        1
-        (= digits 1)
-        (inc max-n)
-        :else
-        (reduce (fn [acc n] (+ acc (count-increasing-n-digits n (dec digits))))
-                0
-                (range (inc max-n)))))
-
-(defn total-inc-dec [digits]
-  (cond (= digits 0)
-        1
-        (= digits 1)
-        10
-        (= digits 2)
-        100
-        :else
-        (+ 100
-           (apply +
-                  (for [d (range 3 (inc digits))]
-                    (- (* 2 (count-decreasing-n-digits 9 d)) 10))))))
-
-(defn count-inc [n digits]
-  (if (= digits 1)
-    (- 10 n)
-    (apply + 
-           (for [d (range n 10)]
-             (count-inc d (dec digits))))))
-
-(defn count-dec [n digits]
-  (if (= digits 1)
-    (inc n)
-    (apply +
-           (for [d (range (inc n))]
-             (count-dec d (dec digits))))))
-
-(defn count-inc-dec [digits]
-  (if (= digits 0)
-    0
-    (- (+ (count-inc 0 digits)
-          (count-dec 9 digits)
-          ;; (count-inc-dec (dec digits))
-          )
-       (* 10 digits))))
-
-;; (count (let [p 2] (for [i (range (Math/pow 10 p)) :let [ds (pad-vec p (digits i))] :when (decreasing-digits? ds)] ds)))
