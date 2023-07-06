@@ -634,3 +634,15 @@
                      (for [n (range 1 10)]
                        (dec (+ (count-dec-first-and-digits n d) (count-inc-first-and-digits n d))))))))))
 
+
+
+;; Kata: Hamming Numbers
+
+(defn hamming [n]
+  (loop [i 0
+         open-set (sorted-set 1)]
+    (let [new-h (first open-set)]
+      (if (= i n)
+        new-h
+        (recur (inc i)
+               (conj (disj open-set new-h) (* 2 new-h) (* 3 new-h) (* 5 new-h)))))))
