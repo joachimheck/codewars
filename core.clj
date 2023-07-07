@@ -646,3 +646,31 @@
         new-h
         (recur (inc i)
                (conj (disj open-set new-h) (* 2 new-h) (* 3 new-h) (* 5 new-h)))))))
+
+
+
+
+;; Kata: NIM the Game
+(defn choose-move [game-state]
+  (let [nonzero-piles (filter #(> (second %) 0) (map-indexed list game-state))
+        one-piles (filter #(= (second %) 1) (map-indexed list game-state))]
+    (if (and (even? (count nonzero-piles)) (= (count nonzero-piles) (inc (count one-piles))))
+      (let [[i s :as non-one] (last (sort-by second nonzero-piles))]
+        [i (- s 2)])
+      (if (odd? (count one-piles))
+        (first one-piles)
+        (let [[i s :as biggest] (last (sort-by second nonzero-piles))]
+          [i (max 1 (dec s))])))))
+
+;; Give opponent an even number of piles, 1 straw each
+;; Don't give opponent an even number of piles with only one containing more than one straw.
+;; Don't give opponent 
+
+
+;; them: even piles, 1 straw each
+;; us  :   odd piles, 1 straw each
+;; them:     even piles, 1 straw each
+;; them:     odd piles, 1 with more than 1 straw
+;; us  :   even piles, 1 with more than 1 straw
+;; them:     odd piles, 1 straw each
+;; them:     even piles, 1 with more than 1 straw
