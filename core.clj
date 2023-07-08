@@ -658,3 +658,10 @@
       (first (filter #(pos? (second %)) indexed))
       (let [[i x] (first (filter (fn [[i x]] (< (bit-xor nim-sum x) x)) indexed))]
         [i (- x (bit-xor nim-sum x))]))))
+
+
+
+
+;; Kata: Which are In?
+(defn in-array [array1 array2]
+  (sort (distinct (for [s1 array1 :when (some #(string/includes? % s1) array2)] s1))))
