@@ -665,3 +665,14 @@
 ;; Kata: Which are In?
 (defn in-array [array1 array2]
   (sort (distinct (for [s1 array1 :when (some #(string/includes? % s1) array2)] s1))))
+
+
+
+
+;; Kata: Tribonacci Sequence
+(defn tribonacci [[a b c :as signature] n]
+  (let [sequence (loop [s signature]
+                   (if (>= (count s) n)
+                     s
+                     (recur (conj s (apply + (subvec s (- (count s) 3)))))))]
+    (subvec sequence 0 n)))
