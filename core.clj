@@ -691,3 +691,15 @@
               (conj %1 %2))
            []
            arr)))
+
+
+
+
+;; Kata: Backwards Read Primes
+(defn backwards-prime [start stop]
+  (for [n (range start (inc stop))
+        :let [reverse-n (Long/parseLong (string/join (reverse (str n))))]
+        :when (and (not= n reverse-n)
+                   (prime? n)
+                   (prime? reverse-n))]
+    n))
