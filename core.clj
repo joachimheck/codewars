@@ -703,3 +703,19 @@
                    (prime? n)
                    (prime? reverse-n))]
     n))
+
+
+
+
+;; Kata: Positions Average
+(defn common-positions [a b]
+  (count (remove false? (map = a b))))
+
+(defn pos-average [s]
+  (let [strings (string/split s #", ")
+        n (count strings)
+        total (* (count (first strings)) (/ (* n (dec n)) 2))
+        common (apply + (for [i (range n)
+                              j (range (inc i) n)]
+                          (common-positions (nth strings i) (nth strings j))))]
+    (double (* 100 (/ common total)))))
