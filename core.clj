@@ -676,3 +676,18 @@
                      s
                      (recur (conj s (apply + (subvec s (- (count s) 3)))))))]
     (subvec sequence 0 n)))
+
+
+
+
+;; Kata: Directions Reduction
+(defn opposite? [a b]
+  (some #{(set [a b])} '(#{"NORTH" "SOUTH"} #{"EAST" "WEST"})))
+
+(defn dirReduc [arr]
+  (seq
+   (reduce #(if (opposite? (last %1) %2)
+              (vec (drop-last %1))
+              (conj %1 %2))
+           []
+           arr)))
