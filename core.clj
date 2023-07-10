@@ -431,7 +431,8 @@
 
 ;; Kata: Sum by Factors
 (defn prime? [n]
-  (cond (= 2 n) true
+  (cond (< n 2) false
+        (= 2 n) true
         (even? n) false
         :else (nil? (first (for [i (iterate inc 3)
                                  :while (<= i (Math/sqrt n))
@@ -719,3 +720,36 @@
                               j (range (inc i) n)]
                           (common-positions (nth strings i) (nth strings j))))]
     (double (* 100 (/ common total)))))
+
+
+
+
+;; Kata: Steps in K-primes
+(defn all-prime-factors [n]
+  (loop [m n
+         factors []]
+    (if-let [prime-factor (first (filter #(= 0 (rem m %))
+                                         (take-while #(<= % (inc (Math/sqrt m))) (primes))))]
+      (recur (/ m prime-factor) (conj factors prime-factor))
+      (cond (and (empty? factors) (> n 1))
+            [n]
+            (prime? m)
+            (conj factors m)
+            :else
+            factors))))
+
+(defn k-primes-from [k start]
+  (filter #(= k (count (all-prime-factors %)))
+          (iterate inc (int (max start (Math/pow 2 k))))))
+
+(defn steps [[first & xs]]
+  (if (empty? xs)
+    '()
+    (concat
+     (for [x xs] (list (- x first) [first x]))
+     (steps xs))))
+
+(defn kprimes-step [k step start end]
+  (map second
+       (filter #(= step (first %))
+               (steps (take-while #(<= % end) (k-primes-from k start))))))
