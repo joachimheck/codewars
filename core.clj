@@ -764,3 +764,37 @@
             (conj parts-sums (- (get parts-sums (dec (count parts-sums))) x)))
           [(apply + ls)]
           ls))
+
+
+
+
+;; Kata: Common Denominators
+(defn prime-factorization [n]
+  (loop [m n
+         factors {}]
+    (if-let [prime-factor (first (filter #(= 0 (rem m %))
+                                         (take-while #(<= % (inc (Math/sqrt m))) (primes))))]
+      (let [pow (last (take-while #(= 0 (rem n (long (Math/pow prime-factor %)))) (iterate inc 1)))]
+        (recur (quot m (long (Math/pow prime-factor pow))) (assoc factors prime-factor pow)))
+      (if (= m 1)
+        factors
+        (assoc factors m 1)))))
+
+(defn reduce-fraction [n d]
+  (let [n-pfs (prime-factorization n)
+        d-pfs (prime-factorization d)
+        shared-factors (filter #(get d-pfs %) (keys n-pfs))
+        gcm (apply * (map #(* % (min (get n-pfs %) (get d-pfs %))) shared-factors))]
+    [(quot n gcm) (quot d gcm)]))
+
+(defn least-common-multiple [ns]
+  (long (apply *
+              (map (fn [[k v]] (Math/pow k v))
+                   (apply merge-with max (map #(prime-factorization %) ns))))))
+
+(defn convert-fracts [lst]
+  (let [reduced-lst (map (fn [[n d]] (reduce-fraction n d)) lst)
+        lcd (least-common-multiple (map second reduced-lst))]
+    (map (fn [[n d]]
+           [(* n (quot lcd d)) lcd])
+         reduced-lst)))
