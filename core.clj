@@ -753,3 +753,14 @@
   (map second
        (filter #(= step (first %))
                (steps (take-while #(<= % end) (k-primes-from k start))))))
+
+
+
+
+;; Kata: Sums of Parts
+;; Should have used reductions!
+(defn parts-sums [ls]
+  (reduce (fn [parts-sums x]
+            (conj parts-sums (- (get parts-sums (dec (count parts-sums))) x)))
+          [(apply + ls)]
+          ls))
