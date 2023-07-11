@@ -798,3 +798,42 @@
     (map (fn [[n d]]
            [(* n (quot lcd d)) lcd])
          reduced-lst)))
+
+
+
+
+;; Kata: Rectangle Rotation
+
+(defn rotate [x y phi]
+  (let [r (Math/sqrt (+ (* x x) (* y y)))
+        theta (+ phi (Math/atan2 y x))]
+    [(* r (Math/cos theta)) (* r (Math/sin theta))]))
+
+(defn maximums [coords]
+  (mapv int
+        (reduce (fn [[minx miny maxx maxy] [x y]]
+                  [(min minx x) (min miny y) (max maxx x) (max maxy y)])
+                [Integer/MAX_VALUE Integer/MAX_VALUE Integer/MIN_VALUE Integer/MIN_VALUE]
+                coords)))
+
+(defn intercept [[x1 y1] [x2 y2] y]
+  (let [m (/ (- y2 y1) (- x2 x1))
+        b (- y1 (* m x1))]
+    (int (Math/floor (/ (- y b) m)))))
+
+(defn rectangle-rotation [a b]
+  (let [half-a (/ a 2)
+        half-b (/ b 2)
+        coords [[half-a half-b] [(- half-a) half-b] [(- half-a) (- half-b)] [half-a (- half-b)]]
+        rot-coords (mapv (fn [[x y]] (rotate x y (/ Math/PI 4))) coords)
+        [_ miny _ maxy] (maximums rot-coords)]
+    (apply + 
+           (for [j (range miny (inc maxy))
+                 :let [left-intercept (if (>= j (get-in rot-coords [1 1]))
+                                        (intercept (get rot-coords 0) (get rot-coords 1) j)
+                                        (intercept (get rot-coords 1) (get rot-coords 2) j))
+                       right-intercept (if (>= j (get-in rot-coords [3 1]))
+                                         (intercept (get rot-coords 3) (get rot-coords 0) j)
+                                         (intercept (get rot-coords 2) (get rot-coords 3) j))]]
+             (- right-intercept left-intercept)))))
+
