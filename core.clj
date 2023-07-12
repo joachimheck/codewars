@@ -846,3 +846,14 @@
        (partition k 1)
        (map string/join)
        (reduce (fn [longest s] (second (sort-by count [s longest]))) "")))
+
+
+
+
+;; Kata: Mexican Wave
+(defn wave [s]
+  (remove #(= % s)
+          (for [i (range (count s))]
+            (string/join (concat (take i s)
+                                 (list (string/upper-case (str (get s i))))
+                                 (drop (inc i) s))))))
