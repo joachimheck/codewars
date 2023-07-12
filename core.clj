@@ -857,3 +857,43 @@
             (string/join (concat (take i s)
                                  (list (string/upper-case (str (get s i))))
                                  (drop (inc i) s))))))
+
+
+
+
+;; Kata: Getting along with Bernoulli's numbers
+(defn factorial [n]
+  (case n
+    0 1
+    1 1
+    (* n (factorial (dec n)))))
+
+(defn binomial [n k]
+  (/ (factorial n) (* (factorial k) (factorial (- n k)))))
+
+
+;; TODO: this is inaccurate, and I'm not sure how to improve the accuracy. Instead, use the binary tree model.
+
+(defn bernoulli [n]
+  (case n
+    0 1
+    1 -0.5
+    ;; (if (even? n) 0
+    ;;     (/ (- (Math/pow 2 (dec n)) 2)))
+    (apply +
+           (for [k (range (inc n))
+                 v (range (inc k))]
+             (* (Math/pow -1 v) (binomial k v) (/ (Math/pow v n) (inc k)))))
+    ))
+
+(defn series [k nb]
+  (cond (and (odd? k) (> k 2))
+        (apply + (for [n (range 1 (inc nb))] (/ 1 (Math/pow n k))))
+        (and (even? k) (>= k 2))
+
+        (* 0.5 (Math/abs (bernoulli k)) (/ (Math/pow (* 2 Math/PI) k) (factorial k)))
+        ;; (/ 1 (* (Math/abs (bernoulli k)) (Math/pow (* 2 Math/PI) k)) (* 2 (factorial k)))
+
+        (< k 0)
+        (* (Math/pow -1 (Math/abs k)) (/ (bernoulli (inc (Math/abs k))) (inc (Math/abs k))))
+        ))
