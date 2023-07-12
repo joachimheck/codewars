@@ -837,3 +837,12 @@
                                          (intercept (get rot-coords 2) (get rot-coords 3) j))]]
              (- right-intercept left-intercept)))))
 
+
+
+
+;; Kata: Consecutive Strings
+(defn longest-cons [strarr k]
+  (->> strarr
+       (partition k 1)
+       (map string/join)
+       (reduce (fn [longest s] (second (sort-by count [s longest]))) "")))
