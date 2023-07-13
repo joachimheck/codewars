@@ -862,38 +862,37 @@
 
 
 ;; Kata: Getting along with Bernoulli's numbers
+(def factorial-cache (atom {}))
+
 (defn factorial [n]
-  (case n
-    0 1
-    1 1
-    (* n (factorial (dec n)))))
+  (if-not (get @factorial-cache n)
+    (swap! factorial-cache assoc n
+           (if (= n 0) 1 (* (bigint n) (factorial (dec n))))))
+  (get @factorial-cache n))
 
 (defn binomial [n k]
   (/ (factorial n) (* (factorial k) (factorial (- n k)))))
 
+(def bernoulli-cache (atom {}))
 
-;; TODO: this is inaccurate, and I'm not sure how to improve the accuracy. Instead, use the binary tree model.
+(defn bernoulli-cubic [n]
+  (if-not (get @bernoulli-cache n)
+    (swap! bernoulli-cache assoc n
+           (- (if (= n 0) 1 0)
+              (reduce (fn [acc k] (+ acc (/ (* (binomial n k) (bernoulli-cubic k)) (+ n (- k) 1))))
+                      0
+                      (range n)))))
+  (get @bernoulli-cache n))
 
-(defn bernoulli [n]
-  (case n
-    0 1
-    1 -0.5
-    ;; (if (even? n) 0
-    ;;     (/ (- (Math/pow 2 (dec n)) 2)))
-    (apply +
-           (for [k (range (inc n))
-                 v (range (inc k))]
-             (* (Math/pow -1 v) (binomial k v) (/ (Math/pow v n) (inc k)))))
-    ))
+(defn abs [n]
+  (if (neg? n) (- n) n))
 
 (defn series [k nb]
+  (reset! factorial-cache {})
+  (reset! bernoulli-cache {})
   (cond (and (odd? k) (> k 2))
         (apply + (for [n (range 1 (inc nb))] (/ 1 (Math/pow n k))))
         (and (even? k) (>= k 2))
-
-        (* 0.5 (Math/abs (bernoulli k)) (/ (Math/pow (* 2 Math/PI) k) (factorial k)))
-        ;; (/ 1 (* (Math/abs (bernoulli k)) (Math/pow (* 2 Math/PI) k)) (* 2 (factorial k)))
-
+        (* 0.5 (abs (double (bernoulli-cubic k))) (/ (Math/pow (* 2 Math/PI) k) (factorial k)))
         (< k 0)
-        (* (Math/pow -1 (Math/abs k)) (/ (bernoulli (inc (Math/abs k))) (inc (Math/abs k))))
-        ))
+        (* (Math/pow -1 (abs k)) (/ (bernoulli-cubic (inc (abs k))) (inc (abs k))))))
