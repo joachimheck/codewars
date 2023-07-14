@@ -896,3 +896,12 @@
         (* 0.5 (abs (double (bernoulli-cubic k))) (/ (Math/pow (* 2 Math/PI) k) (factorial k)))
         (< k 0)
         (* (Math/pow -1 (abs k)) (/ (bernoulli-cubic (inc (abs k))) (inc (abs k))))))
+
+
+
+
+;; Kata: Split Strings
+(defn solution [s]
+  (->> (if (even? (count s)) s (string/join (list s \_)))
+       (partition-all 2 2)
+       (map string/join)))
