@@ -905,3 +905,51 @@
   (->> (if (even? (count s)) s (string/join (list s \_)))
        (partition-all 2 2)
        (map string/join)))
+
+
+
+
+;; Kata: My smallest code interpreter (aka Brainf**k)
+(defn jump-forward [ip dp source memory]
+  (if (= (get memory dp) 0)
+    (loop [new-ip (inc ip)
+           depth 1]
+      (if (= depth 0)
+        new-ip
+        (case (get source new-ip)
+          \[ (recur (inc new-ip) (inc depth))
+          \] (recur (inc new-ip) (dec depth))
+          (recur (inc new-ip) depth))))
+    (inc ip)))
+
+(defn jump-backward [ip dp source memory]
+  (if (not= (get memory dp) 0)
+    (loop [new-ip (dec ip)
+           depth 1]
+      (if (= depth 0)
+        (+ 2 new-ip)
+        (case (get source new-ip)
+          \] (recur (dec new-ip) (inc depth))
+          \[ (recur (dec new-ip) (dec depth))
+          (recur (dec new-ip) depth))))
+    (inc ip)))
+
+(defn execute-string [source input]
+  (println "execute-string" source (map int input))
+  (loop [ip 0
+         dp 0
+         memory (vec (repeat 30000 0))
+         input (map int input)
+         output []]
+    (if (or (< ip 0) (>= ip (count source)))
+      (if (empty? output) nil (string/join (map char output)))
+      (case (get source ip)
+        \> (recur (inc ip) (inc dp) memory input output)
+        \< (recur (inc ip) (dec dp) memory input output)
+        \+ (recur (inc ip) dp (update memory dp #(mod (inc %) 256)) input output)
+        \- (recur (inc ip) dp (update memory dp #(mod (dec %) 256)) input output)
+        \. (recur (inc ip) dp memory input (conj output (get memory dp)))
+        \, (recur (inc ip) dp (assoc memory dp (first input)) (rest input) output)
+        \[ (recur (jump-forward ip dp source memory) dp memory input output)
+        \] (recur (jump-backward ip dp source memory) dp memory input output)))))
+
