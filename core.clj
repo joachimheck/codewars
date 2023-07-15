@@ -953,3 +953,28 @@
         \[ (recur (jump-forward ip dp source memory) dp memory input output)
         \] (recur (jump-backward ip dp source memory) dp memory input output)))))
 
+
+
+
+;; Kata: Exponentials as Fractions
+(defn digits
+  ([n] (digits n '()))
+  ([n ds]
+   (if (= n 0)
+     (if (empty? ds) '(0) ds)
+     (recur (quot n 10) (conj ds (rem n 10))))))
+
+(defn rational-pow
+  ([n k] (rational-pow (rationalize n) k (bigint 1)))
+  ([n k result]
+   (if (= k 0)
+     result
+     (recur n (dec k) (* result n)))))
+
+(defn expand [x n-digits]
+  (reduce (fn [sum k]
+            (if (and (ratio? sum) (>= (count (digits (numerator sum))) n-digits))
+              (reduced [(numerator sum) (denominator sum)])
+              (+ sum (/ (rational-pow x k) (factorial k)))))
+          1
+          (iterate inc 1)))
