@@ -999,3 +999,21 @@
    (map (fn [[c s n]]
           (string/join (concat (list s ":") (repeat n c))))
         (sort-by (comp - last) (sort-by #(get {\1 1 \2 2 \= 3} (second %)) (sort-by first (merge-freqs (lower-freqs s1) (lower-freqs s2))))))))
+
+
+
+
+;; Perimeter of squares in a rectangle
+(def fibonacci-cache (atom {}))
+
+(defn fibonacci [n]
+  (case n
+    0 1
+    1 1
+    (do
+      (if-not (get @fibonacci-cache n)
+        (swap! fibonacci-cache assoc n (+' (fibonacci (- n 1)) (fibonacci (- n 2)))))
+      (get @fibonacci-cache n))))
+
+(defn perimeter [n]
+  (* 4 (apply +' (for [i (range (inc n))] (fibonacci i)))))
