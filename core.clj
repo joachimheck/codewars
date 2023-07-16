@@ -978,3 +978,24 @@
               (+ sum (/ (rational-pow x k) (factorial k)))))
           1
           (iterate inc 1)))
+
+
+
+
+;; Strings Mix
+(defn lower-freqs [s]
+  (into {} (filter #(> (second %) 1) (frequencies (string/join (re-seq #"[a-z]" s))))))
+
+(defn merge-freqs [freqs1 freqs2]
+  (for [c (distinct (concat (keys freqs1) (keys freqs2)))
+        :let [diff ((fnil compare 0 0) (get freqs1 c) (get freqs2 c))]]
+    (cond (> diff 0) [c \1 (get freqs1 c)]
+          (< diff 0) [c \2 (get freqs2 c)]
+          :else [c \= (get freqs1 c)])))
+
+(defn mix [s1 s2]
+  (string/join
+   "/"
+   (map (fn [[c s n]]
+          (string/join (concat (list s ":") (repeat n c))))
+        (sort-by (comp - last) (sort-by #(get {\1 1 \2 2 \= 3} (second %)) (sort-by first (merge-freqs (lower-freqs s1) (lower-freqs s2))))))))
