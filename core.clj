@@ -495,7 +495,7 @@
 
 
 
-;; Kata: Faberg� Easter Eggs crush test
+;; Kata: Fabergé Easter Eggs crush test
 ;; (defn build-tree [eggs tries]
 ;;   (cond (or (= eggs 0) (= tries 0))
 ;;         (list {:eggs eggs :tries tries :floors 0})
@@ -1017,3 +1017,34 @@
 
 (defn perimeter [n]
   (* 4 (apply +' (for [i (range (inc n))] (fibonacci i)))))
+
+
+
+
+;; One line task: Is the King in Check?
+
+;; 527 (defn is-check [b](let [r (range 8)](boolean (some (set (for [y r x r :when (= "♔" (get-in b [y x]))] [y x]))(let [t [[1 1][1 -1][-1 1][-1 -1]] u [[1 0][-1 0][0 1][0 -1]] vrs {"♟" [[[1 1][-1 1]][0]] "♞" [[[-1 -2][1 -2][-1 2][1 2][2 -1][2 1][-2 -1][-2 1]][0]] "♝" [t r] "♜" [u r] "♛" [(concat t u) r] "♔" [[] nil] " " [[] nil]}](apply concat (for [y r x r](let [[vs r] (get vrs (get-in b [y x]))](for [[l m] vs](first (filter #(not= " " (get-in b %)) (map #(vector (+ y (* (inc %) m)) (+ x (* (inc %) l))) r))))))))))))
+
+;; 411 (defn is-check [b](contains? (let [r (range 8) t [[1 1][1 -1][-1 1][-1 -1]] u [[1 0][-1 0][0 1][0 -1]] vrs {"♟" [[[1 1][-1 1]][0]] "♞" [[[-1 -2][1 -2][-1 2][1 2][2 -1][2 1][-2 -1][-2 1]][0]] "♝" [t r] "♜" [u r] "♛" [(concat t u) r]}] (set (for [y r x r :let [[vs r] (get vrs (get-in b [y x]) [])] [l m] vs] (first (remove #{" "} (map #(get-in b [(+ y (* m %)) (+ x (* l %))] " ") (map inc r))))))) "♔"))
+
+;; 352 (defn is-check [b](contains? (let [g get-in r (range 8) n -1 t [[1 1][1 n][n 1][n n]] u [[1 0][n 0][0 1][0 n]] m {"♟"[[[1 1][n 1]][0]]"♞"[[[1 2][2 1][n 2][-2 1]][0 -2]]"♝"[t r]"♜"[u r]"♛"[(concat t u) r]}] (set(for [y r x r :let [[q r](get m (g b [y x]))][o p]q] (first(remove #{" "}(map #(g b [(+ y(* p %)) (+ x(* o %))])(map inc r)))))))"♔"))
+
+(defn is-check [b]
+  (contains? (let [g get-in
+                   r (range 8)
+                   n -1
+                   t [[1 1][1 n][n 1][n n]]
+                   u [[1 0][n 0][0 1][0 n]]
+                   m {"♟" [[[1 1][n 1]][0 1]]
+                      "♞" [[[1 2][2 1][n 2][-2 1]][0 1 n]]
+                      "♝" [t r]
+                      "♜" [u r]
+                      "♛" [(concat t u) r]}]
+               (set
+                (for [y r x r
+                      :let [[q s] (get m (g b [y x]))]
+                      [o p] q]
+                  (first (remove #{" "} (map #(g b [(+ y (* p %)) (+ x (* o %))]) (rest s)))))))
+             "♔"))
+
+
