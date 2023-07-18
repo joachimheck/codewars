@@ -1029,22 +1029,33 @@
 
 ;; 352 (defn is-check [b](contains? (let [g get-in r (range 8) n -1 t [[1 1][1 n][n 1][n n]] u [[1 0][n 0][0 1][0 n]] m {"♟"[[[1 1][n 1]][0]]"♞"[[[1 2][2 1][n 2][-2 1]][0 -2]]"♝"[t r]"♜"[u r]"♛"[(concat t u) r]}] (set(for [y r x r :let [[q r](get m (g b [y x]))][o p]q] (first(remove #{" "}(map #(g b [(+ y(* p %)) (+ x(* o %))])(map inc r)))))))"♔"))
 
-(defn is-check [b]
-  (contains? (let [g get-in
-                   r (range 8)
-                   n -1
-                   t [[1 1][1 n][n 1][n n]]
-                   u [[1 0][n 0][0 1][0 n]]
-                   m {"♟" [[[1 1][n 1]][0 1]]
-                      "♞" [[[1 2][2 1][n 2][-2 1]][0 1 n]]
-                      "♝" [t r]
-                      "♜" [u r]
-                      "♛" [(concat t u) r]}]
-               (set
-                (for [y r x r
-                      :let [[q s] (get m (g b [y x]))]
-                      [o p] q]
-                  (first (remove #{" "} (map #(g b [(+ y (* p %)) (+ x (* o %))]) (rest s)))))))
-             "♔"))
+;; 327 (defn is-check[b](.contains(let[g get-in r(range 8)n -1 t[[1 1][1 n][n 1][n n]]u[[1 0][n 0][0 1][0 n]]m {"♟"[[[1 1][n 1]][0 1]]"♞"[[[1 2][2 1][n 2][-2 1]][0 1 n]]"♝"[t r]"♜"[u r]"♛"[(into t u)r]}](for[y r x r :let[[q s](get m(g b[y x]))][o p]q](first(remove #{" "}(map #(g b[(+ y(* p %))(+ x(* o %))])(rest s))))))"♔"))
+
+;; 352 (defn is-check[b](reduce #(or %1 %2)false(let [g get-in r(range 8) n -1 t[[1 1][1 n][n 1][n n]] u[[1 0][n 0][0 1][0 n]] m{"♟"[[[1 1][n 1]][0 1]]"♞"[[[1 2][2 1][n 2][-2 1]][0 1 n]]"♝"[t r]"♜"[u r]"♛"[(into t u) r]}](for[y r x r :let [[q s](get m(g b [y x]))][o p]q](="♔"(first(remove #{" "}(map #(g b[(+ y (* p %))(+ x (* o %))])(rest s)))))))))
 
 
+(let [g get-in
+      r (range 8)
+      n -1
+      t [[1 1][1 n][n 1][n n]]
+      u [[1 0][n 0][0 1][0 n]]
+      m {"♟" [[[1 1][n 1]][0 1]]
+         "♞" [[[1 2][2 1][n 2][-2 1]][0 1 n]]
+         "♝" [t r]
+         "♜" [u r]
+         "♛" [(into t u) r]}]
+  (defn is-check [b]
+    (for [y r x r
+          :let [[q s] (get m (g b [y x]))]
+          [o p] q
+          w (rest s)]
+      (for [w (rest s)
+            :let [v (g b [(+ y (* p w)) (+ x (* o w))])
+                  ;; _ (println [o p] [(+ y (* p w)) (+ x (* o w))] v)
+                  ]
+            :when (not= " " v)]
+        v))
+    ;; (= "♔" )
+    ))
+
+;; (is-check (quote [[" " " " " " " " " " " " " " " "] [" " " " " " " " " " " " " " " "] [" " " " " " " " " " " " " " " "] [" " " " " " " " " " " " " " " "] [" " " " " " " " " " " " " " " "] [" " " " "♔" " " " " "♜" " " " "] [" " " " " " " " " " " " " " " "] [" " " " " " " " " " " " " " " "]]))
