@@ -1034,28 +1034,36 @@
 ;; 352 (defn is-check[b](reduce #(or %1 %2)false(let [g get-in r(range 8) n -1 t[[1 1][1 n][n 1][n n]] u[[1 0][n 0][0 1][0 n]] m{"♟"[[[1 1][n 1]][0 1]]"♞"[[[1 2][2 1][n 2][-2 1]][0 1 n]]"♝"[t r]"♜"[u r]"♛"[(into t u) r]}](for[y r x r :let [[q s](get m(g b [y x]))][o p]q](="♔"(first(remove #{" "}(map #(g b[(+ y (* p %))(+ x (* o %))])(rest s)))))))))
 
 
-(let [g get-in
-      r (range 8)
-      n -1
-      t [[1 1][1 n][n 1][n n]]
-      u [[1 0][n 0][0 1][0 n]]
-      m {"♟" [[[1 1][n 1]][0 1]]
-         "♞" [[[1 2][2 1][n 2][-2 1]][0 1 n]]
-         "♝" [t r]
-         "♜" [u r]
-         "♛" [(into t u) r]}]
-  (defn is-check [b]
-    (for [y r x r
-          :let [[q s] (get m (g b [y x]))]
-          [o p] q
-          w (rest s)]
-      (for [w (rest s)
-            :let [v (g b [(+ y (* p w)) (+ x (* o w))])
-                  ;; _ (println [o p] [(+ y (* p w)) (+ x (* o w))] v)
-                  ]
-            :when (not= " " v)]
-        v))
-    ;; (= "♔" )
-    ))
+;; (is-check (quote [[" " " " " " " " " " " " " " " "][" " " " " " " " " " " " " " " "][" " " " " " " " " " " " " " " "][" " " " " " " " " " " " " " " "][" " " " " " " " " " " " " " " "][" " " " "♔" " " " " "♜" " " " "][" " " " " " " " " " " " " " " "][" " " " " " " " " " " " " " " "]]))
 
-;; (is-check (quote [[" " " " " " " " " " " " " " " "] [" " " " " " " " " " " " " " " "] [" " " " " " " " " " " " " " " "] [" " " " " " " " " " " " " " " "] [" " " " " " " " " " " " " " " "] [" " " " "♔" " " " " "♜" " " " "] [" " " " " " " " " " " " " " " "] [" " " " " " " " " " " " " " " "]]))
+;; 338 (defn is-check[b](let[g get-in r(range 8)n -1 t[[1 1][1 n][n 1][n n]]u[[1 0][n 0][0 1][0 n]]m {"♟"[[[1 1][n 1]][0 1]]"♞"[[[1 2][2 1][n 2][-2 1]][0 1 n]]"♝"[t r]"♜"[u r]"♛"[(into t u)r]}](.contains(for[y r x r :let[[q s](get m(g b[y x]))][o p]q](first(for[w(rest s):let[v(g b[(+ y(* p w))(+ x(* o w))])]:when(not= " " v)]v)))"♔")))
+
+;; 325 (defn is-check[b](let[g get-in r(range 8)n -1 t[[1 1][1 n][n 1][n n]]u[[1 0][n 0][0 1][0 n]]m {"♟"[[[1 1][n 1]][0 1]]"♞"[[[1 2][2 1][n 2][2 n]][0 1 n]]"♝"[t r]"♜"[u r]"♛"[(into t u)r]}](.contains(for[y r x r :let[[q s](get m(g b[y x]))][o p]q](first(remove #{" "}(rest(map #(g b[(+ y(* p %))(+ x(* o %))])s)))))"♔")))
+
+;; 317 (defn is-check[b](.contains (for[r[(range 8)]y r x r :let[g get-in n -1 t[[1 1][1 n][n 1][n n]]u[[1 0][n 0][0 1][0 n]][q s](get{"♟"[[[1 1][n 1]][0 1]]"♞"[[[1 2][2 1][n 2][2 n]][0 1 n]]"♝"[t r]"♜"[u r]"♛"[(into t u)r]}(g b[y x]))][o p]q](first(remove #{" "}(rest(map #(g b[(+ y(* p %))(+ x(* o %))])s)))))"♔"))
+
+;; 306 (defn is-check[b](.contains(for[r[(range 8)]y r x r :let[n -1 t[[1 1][1 n][n 1][n n]]u[[1 0][n 0][0 1][0 n]][q[_ & s]]({"♟"[[[1 1][n 1]][0 1]]"♞"[[[1 2][2 1][n 2][2 n]][0 1 n]]"♝"[t r]"♜"[u r]"♛"[(into t u)r]}((b y)x))][o p]q](first(remove #{" "}(map #(get-in b[(+ y(* p %))(+ x(* o %))])s))))"♔"))
+
+;; 305 (defn is-check[b](.contains(for[r[(range 8)]y r x r :let[n -1 t[[1 1][1 n][n 1][n n]]u[[1 0][n 0][0 1][0 n]][q[_ & s]]({"♟"[[[1 1][n 1]][0 1]]"♞"[[[1 2][2 1][n 2][2 n]][0 1 n]]"♝"[t r]"♜"[u r]"♛"[(into t u)r]}((b y)x))][o p]q](first(remove #{\ }(map #(get-in b[(+ y(* p %))(+ x(* o %))0])s))))\♔))
+
+;; 306 (defn is-check[b](.contains(for[r[(range 8)]y r x r :let[n -1 t[[1 1][1 n][n 1][n n]]u[[1 0][n 0][0 1][0 n]][q[_ & s]]({"♟"[[[1 1][n 1]][0 1]]"♞"[[[1 2][2 1][n 2][2 n]][0 1 n]]"♝"[t r]"♜"[u r]"♛"[(into t u)r]}((b y)x))][o p]q](some #{\♟\♞\♝\♜\♛\♔}(map #(get-in b[(+ y(* p %))(+ x(* o %))0])s)))\♔))
+
+(defn is-check [b]
+  (.contains (for [r [(range 8)]
+                   y r
+                   x r
+                   :let [n -1
+                         t [[1 1] [1 n] [n 1] [n n]]
+                         u [[1 0] [n 0] [0 1] [0 n]]
+                         [q [_ & s]] ({"♟" [[[1 1] [n 1]] [0 1]]
+                                       "♞" [[[1 2] [2 1] [n 2] [2 n]] [0 1 n]]
+                                       "♝" [t r]
+                                       "♜" [u r]
+                                       "♛" [(into t u) r]}
+                                      ((b y) x))]
+                   [o p] q]
+               (first (remove #{\ } (map #(get-in b [(+ y(* p %)) (+ x(* o %)) 0]) s)))
+               ;; (some #{\♟\♞\♝\♜\♛\♔}(map #(get-in b [(+ y (* p %))(+ x (* o %))0])s))
+               ;; (some #(if (#{\ } %) nil %) (map #(get-in b [(+ y (* p %))(+ x (* o %))0])s))
+               )
+             \♔))
