@@ -1099,3 +1099,10 @@
               (conj acc c)))
           []
           input))
+
+
+
+
+;; Kata: Sum consecutives
+(defn sum-consecutives [a]
+  (map #(apply + %) (partition-by identity a)))
