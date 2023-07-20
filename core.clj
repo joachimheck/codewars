@@ -1087,3 +1087,15 @@
        (map #(max % 0))
        (map #(min % 255))
        (apply (partial format "%02X%02X%02X"))))
+
+
+
+
+;; Kata: Unique in Order
+(defn unique-in-order [input]
+  (reduce (fn [acc c]
+            (if (= c (last acc))
+              acc
+              (conj acc c)))
+          []
+          input))
