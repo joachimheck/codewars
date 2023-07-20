@@ -1077,3 +1077,13 @@
   (if (and (odd? n) (> n 1))
     0
     (bernoulli n)))
+
+
+
+
+;; Kata: RGB To Hex Conversion
+(defn rgb [r g b]
+  (->> [r g b]
+       (map #(max % 0))
+       (map #(min % 255))
+       (apply (partial format "%02X%02X%02X"))))
