@@ -1106,3 +1106,11 @@
 ;; Kata: Sum consecutives
 (defn sum-consecutives [a]
   (map #(apply + %) (partition-by identity a)))
+
+
+
+
+;; Kata: Your Ride is Here
+(defn ride [group comet]
+  (let [comet-num (fn [s] (mod (apply * (map (comp #(- % 64) int) s)) 47))]
+    (if (apply = (map comet-num [group comet])) "GO" "STAY")))
