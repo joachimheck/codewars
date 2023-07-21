@@ -1114,3 +1114,17 @@
 (defn ride [group comet]
   (let [comet-num (fn [s] (mod (apply * (map (comp #(- % 64) int) s)) 47))]
     (if (apply = (map comet-num [group comet])) "GO" "STAY")))
+
+
+
+
+;; Kata: Routes in a Square Grid
+(defn pascal-triangle-row [n]
+  (reductions (fn [acc k] (* acc (/ (+ n 1 (- k)) k)))
+              1
+              (take n (iterate inc 1))))
+
+(defn routes [n]
+  (if (> n 0)
+    (nth (pascal-triangle-row (* 2 n)) n)
+    0))
