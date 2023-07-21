@@ -1128,3 +1128,27 @@
   (if (> n 0)
     (nth (pascal-triangle-row (* 2 n)) n)
     0))
+
+
+
+
+;; When greatest is less than smallest
+;; (defn greatest [x y n]
+;;   (first (filter #(or (= % 0) (= 0 (mod % x) (mod % y)))
+;;                  (take n (iterate dec (dec n))))))
+
+;; (defn smallest [x y n]
+;;   (first (filter #(= 0 (mod % x) (mod % y))
+;;                  (iterate inc (inc n)))))
+
+(defn greatest [x y n]
+  (let [m (quot n x)
+        start (if (= n (* m x)) (- n x) (* m x))]
+    (first (filter #(or (= % 0) (= 0 (mod % x) (mod % y)))
+                   (take-while #(>= % 0) (iterate #(- % x) start))))))
+
+(defn smallest [x y n]
+  (let [m (quot n x)
+        start (if (= n (* m x)) (+ n x) (* m x))]
+    (first (filter #(= 0 (mod % x) (mod % y))
+                   (iterate #(+ % x) start)))))
