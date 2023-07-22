@@ -788,8 +788,8 @@
     [(quot n gcm) (quot d gcm)]))
 
 (defn least-common-multiple [ns]
-  (long (apply *
-              (map (fn [[k v]] (Math/pow k v))
+  (long (apply *'
+              (map (fn [[k v]] (rational-pow k v))
                    (apply merge-with max (map #(prime-factorization %) ns))))))
 
 (defn convert-fracts [lst]
@@ -885,7 +885,7 @@
   (get @bernoulli-cache n))
 
 (defn abs [n]
-  (if (neg? n) (- n) n))
+  (if (neg? n) (-' n) n))
 
 (defn series [k nb]
   (reset! factorial-cache {})
@@ -1133,22 +1133,21 @@
 
 
 ;; When greatest is less than smallest
-;; (defn greatest [x y n]
-;;   (first (filter #(or (= % 0) (= 0 (mod % x) (mod % y)))
-;;                  (take n (iterate dec (dec n))))))
+(defn greatest-common-divisor [a b]
+  (let [[l g] (sort [a b])]
+    (if (= 0 l)
+      g
+      (greatest-common-divisor l (mod g l)))))
 
-;; (defn smallest [x y n]
-;;   (first (filter #(= 0 (mod % x) (mod % y))
-;;                  (iterate inc (inc n)))))
+(defn least-common-multiple [a b]
+  (/ (* (abs a) (abs b)) (greatest-common-divisor a b)))
 
 (defn greatest [x y n]
-  (let [m (quot n x)
-        start (if (= n (* m x)) (- n x) (* m x))]
-    (first (filter #(or (= % 0) (= 0 (mod % x) (mod % y)))
-                   (take-while #(>= % 0) (iterate #(- % x) start))))))
+  (let [lcm (least-common-multiple [x y])]
+    (if (>= lcm n)
+      0
+      (* lcm (quot n lcm)))))
 
 (defn smallest [x y n]
-  (let [m (quot n x)
-        start (if (= n (* m x)) (+ n x) (* m x))]
-    (first (filter #(= 0 (mod % x) (mod % y))
-                   (iterate #(+ % x) start)))))
+  (let [lcm (least-common-multiple [x y])]
+    (* lcm (inc (quot n lcm)))))
