@@ -1151,3 +1151,10 @@
 (defn smallest [x y n]
   (let [lcm (least-common-multiple [x y])]
     (* lcm (inc (quot n lcm)))))
+
+
+
+
+;; Consecutive k-Primes
+(defn consec-kprimes [k xs]
+  (apply + (map #(dec (count %)) (filter #(= k (first %)) (partition-by identity (map #(apply + (vals %)) (map prime-factorization xs)))))))
