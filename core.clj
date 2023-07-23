@@ -1193,3 +1193,10 @@
                      [(vec (remove #{0} (into b1 b2)))]
                      (subvec apples (inc i) j)
                      (subvec apples (inc j)))))))))
+
+
+
+
+;; Array.diff
+(defn array-diff [a b]
+  (remove (set b) a))
