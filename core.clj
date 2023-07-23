@@ -1172,3 +1172,24 @@
 ;; Gradient Interpolation
 (defn gradient-fn [a b]
   (fn [x] (mapv #(int (+ %1 (* (/ x 100) (- %2 %1)))) a b)))
+
+
+
+
+;; Bad Apples
+(defn find-bad-apples [packages]
+  (keep-indexed (fn [i p] (if (some #{0} p) [i p])) packages))
+
+(defn bad-apples [input]
+  (loop [apples (vec (remove #(apply = 0 %) input))]
+    (let [bads (find-bad-apples apples)
+          [i b1] (first bads)
+          [j b2] (second bads)]
+      (case (count bads)
+        0 apples
+        1 (recur (vec (apply conj (subvec apples 0 i) (subvec apples (inc i)))))
+        (recur (vec (concat
+                     (subvec apples 0 i)
+                     [(vec (remove #{0} (into b1 b2)))]
+                     (subvec apples (inc i) j)
+                     (subvec apples (inc j)))))))))
