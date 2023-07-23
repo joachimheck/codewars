@@ -1200,3 +1200,10 @@
 ;; Array.diff
 (defn array-diff [a b]
   (remove (set b) a))
+
+
+
+
+;; Function Composition
+(defn compose [f g]
+  (comp f g))
