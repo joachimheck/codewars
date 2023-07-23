@@ -1207,3 +1207,17 @@
 ;; Function Composition
 (defn compose [f g]
   (comp f g))
+
+
+
+
+;; Josephus Survivor
+(defn josephus-survivor [n k]
+  (println "josephus-survivor" n k)
+  (loop [people (vec (range 1 (inc n)))
+         i (mod (dec k) (count people))]
+    ;; (println "loop" people i)
+    (if (= (count people) 1)
+      (first people)
+      (recur (into (subvec people 0 i) (subvec people (inc i)))
+             (mod (+ i (dec k)) (dec (count people)))))))
