@@ -787,9 +787,16 @@
         gcm (apply * (map #(* % (min (get n-pfs %) (get d-pfs %))) shared-factors))]
     [(quot n gcm) (quot d gcm)]))
 
+(defn pow
+  ([x p] (pow x p 1))
+  ([x p i]
+   (if (= p 0)
+     (* i 1)
+     (recur x (dec p) (* i x)))))
+
 (defn least-common-multiple [ns]
   (long (apply *'
-              (map (fn [[k v]] (rational-pow k v))
+              (map (fn [[k v]] (pow k v))
                    (apply merge-with max (map #(prime-factorization %) ns))))))
 
 (defn convert-fracts [lst]
@@ -1158,3 +1165,10 @@
 ;; Consecutive k-Primes
 (defn consec-kprimes [k xs]
   (apply + (map #(dec (count %)) (filter #(= k (first %)) (partition-by identity (map #(apply + (vals %)) (map prime-factorization xs)))))))
+
+
+
+
+;; Gradient Interpolation
+(defn gradient-fn [a b]
+  (fn [x] (mapv #(int (+ %1 (* (/ x 100) (- %2 %1)))) a b)))
