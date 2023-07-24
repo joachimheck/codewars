@@ -1215,9 +1215,35 @@
 (defn josephus-survivor [n k]
   (println "josephus-survivor" n k)
   (loop [people (vec (range 1 (inc n)))
-         i (mod (dec k) (count people))]
+         i (mod (dec k) n)]
     ;; (println "loop" people i)
     (if (= (count people) 1)
       (first people)
       (recur (into (subvec people 0 i) (subvec people (inc i)))
              (mod (+ i (dec k)) (dec (count people)))))))
+
+(defn jo-array [a k s]
+  (println "josephus-survivor" a k)
+  (let [mk (mod k (count a))]
+    (loop [people a
+           start s
+           iter 0]
+      (let [;;mk (mod k (count people))
+            ]
+        (println "loop" people start k (count people) mk)
+        (if (> iter 10)
+          people
+          (if (<= (count people) 1)
+            (first people)
+            (recur (keep-indexed (fn [i v]
+                                   (println "fn" i v "mod" (mod (+ start i) k) (if (not= (mod (+ start i) k) (dec mk)) "" "X"))
+                                   (if (not= (mod (+ start i) k) (dec mk)) v)) people)
+                   (- k (rem (count people) k) 1)
+                   (inc iter))))))))
+
+(defn josephus-survivor [n k]
+  (jo-array (vec (range 1 (inc n))) k 0))
+
+;; (josephus-survivor 7 3)
+;; (josephus-survivor 11 19)
+
