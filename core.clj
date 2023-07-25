@@ -1212,17 +1212,18 @@
 
 
 ;; Josephus Survivor
-(defn josephus-survivor [n k]
+(defn josephus-survivor-1 [n k]
   (println "josephus-survivor" n k)
   (loop [people (vec (range 1 (inc n)))
          i (mod (dec k) n)]
     ;; (println "loop" people i)
     (if (= (count people) 1)
       (first people)
-      (recur (into (subvec people 0 i) (subvec people (inc i)))
-             (mod (+ i (dec k)) (dec (count people)))))))
+      (do (println "Removing element" i ":" (nth people i))
+       (recur (into (subvec people 0 i) (subvec people (inc i)))
+              (mod (+ i (dec k)) (dec (count people))))))))
 
-(defn jo-array [a k s]
+(defn jo-array-2 [a k s]
   (println "josephus-survivor" a k)
   (let [mk (mod k (count a))]
     (loop [people a
@@ -1241,9 +1242,76 @@
                    (- k (rem (count people) k) 1)
                    (inc iter))))))))
 
+(defn josephus-map [n]
+  (into {}
+        (for [i (range 1 (inc n))]
+          [i (if (= i n) 1 (inc i))])))
+
 (defn josephus-survivor [n k]
-  (jo-array (vec (range 1 (inc n))) k 0))
+  (loop [jm (josephus-map n)
+         current 1
+         prev n
+         iteration 0]
+    ;; (println "loop-1" (sort jm) current)
+    (if (= 1 (count jm))
+      (first (first jm))
+      (let [[m c p] (loop [current current
+                           prev prev
+                           i 1]
+                      ;; (println "loop-2" current prev i k (sort jm))
+                      (let [next (get jm current)]
+                        (if (= i k)
+                          ;; (list (dissoc (assoc jm prev next) current) next prev)
+                          (list (assoc jm prev next) next prev)
+                          (recur next current (inc i)))))]
+        (recur m c p (inc iteration))))))
+
+(defn josephus-survivor [n k]
+  (loop [jm (josephus-map n)
+         current 1
+         prev n
+         i 1
+         j 1]
+    ;; (println (sort jm))
+    (if (= i n)
+      current
+      (let [next (get jm current)]
+        (if (= j k)
+          ;; (recur (dissoc (assoc jm prev next) current) next prev (inc i) 1)
+          (recur (assoc jm prev next) next prev (inc i) 1)
+          (recur jm next current i (inc j)))))))
 
 ;; (josephus-survivor 7 3)
 ;; (josephus-survivor 11 19)
 
+;; 01 02 03 04 05 06 07 08 09 10 11
+
+;; remove l[7]: 08, l[7] = 09  19 = 11 + 8
+;; 01 02 03 04 05 06 07 09 10 11
+
+;; remove l[5]: 06, l[5] = 07  19 + 7 = 26 = 2*10 + 6
+;; 01 02 03 04 05 07 09 10 11
+
+;; remove l[5]: 07, l[5] = 09  19 + 5 = 24 = 2*9 + 6
+;; 01 02 03 04 05 09 10 11
+
+;; remove l[7]: 11, l[0] = 01  19 + 5 = 24 = 3*8 + 0
+;; 01 02 03 04 05 09 10
+
+;; remove l[4]: 05, l[4] = 09  19 + 0 = 19 = 2*7 + 5
+;; 01 02 03 04 09 10
+
+;; remove l[4]: 09, l[4] = 10  19 + 4 = 23 = 3*6 + 5
+;; 01 02 03 04 10
+
+;; remove l[2]: 03, l[2] = 04  19 + 4 = 23 = 4*5 + 3
+;; 01 02 04 10
+
+;; remove l[0]: 01, l[0] = 02  19 + 2 = 21 = 5*4 + 1
+;; 02 04 10
+
+;; remove l[0]: 02, l[0] = 04  19 + 0 = 19 = 6*3 + 1
+;; 04 10
+
+;; remove l[0]: 04, l[0] = 10  19 + 0 = 19 = 7*2 + 5
+;; 10
