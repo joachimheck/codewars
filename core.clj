@@ -1216,3 +1216,28 @@
   (reduce (fn [prev n] (inc (mod (+ prev k -1) n)))
           1
           (take n (iterate inc 1))))
+
+
+
+
+;; Numbers that are a power of their sum of digits
+(defn is-power-of-digit-sum? [n]
+  ;; (println "is-power-of-digit-sum?" n)
+  (let [sum (apply + (digits n))]
+    (if (= sum 1)
+      false
+      (loop [x sum]
+        (cond (= x n)
+              true
+              (> x n)
+              false
+              :else
+              (recur (* x sum)))))))
+
+(defn power-sum-digits []
+  (filter is-power-of-digit-sum?
+          (iterate inc 10)))
+
+(defn power-sum-dig-term [n]
+  (println "power-sum-dig-term" n)
+  (nth (power-sum-digits) (dec n)))
