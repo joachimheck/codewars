@@ -1224,15 +1224,15 @@
 (defn is-power-of-digit-sum? [n]
   ;; (println "is-power-of-digit-sum?" n)
   (let [sum (apply + (digits n))]
-    (if (= sum 1)
-      false
-      (loop [x sum]
-        (cond (= x n)
-              true
-              (> x n)
-              false
-              :else
-              (recur (* x sum)))))))
+    (and (> sum 1) (= (quot n sum) sum) (= (rem n sum) 0))
+    ;; (loop [x sum]
+    ;;   (cond (= x n)
+    ;;         true
+    ;;         (> x n)
+    ;;         false
+    ;;         :else
+    ;;         (recur (* x sum))))
+    ))
 
 (defn power-sum-digits []
   (filter is-power-of-digit-sum?
@@ -1241,3 +1241,25 @@
 (defn power-sum-dig-term [n]
   (println "power-sum-dig-term" n)
   (nth (power-sum-digits) (dec n)))
+
+(defn first-power-sum [n]
+  (first
+   (filter #(= (first %) n)
+           (keep-indexed (fn [i x] (let [ds (digits x)]
+                                     (if (> (count ds) 1)
+                                       (list (apply + ds) (inc i) x)
+                                       (list 0 0 0))))
+                         (take-while #(<= % Long/MAX_VALUE) (reductions *' n (repeat n)))))))
+
+(defn power-sums [n]
+  (filter #(= (first %) n)
+           (keep-indexed (fn [i x] (let [ds (digits x)]
+                                     (if (> (count ds) 1)
+                                       (list (apply + ds) (inc i) x)
+                                       (list 0 0 0))))
+                         (take-while #(<= % Long/MAX_VALUE) (reductions *' n (repeat n))))))
+
+(defn power-sum-dig-term [n]
+  (println "power-sum-dig-term" n)
+  (let [adjustment 2]
+   (last (nth (sort-by last (take (* (inc n) adjustment) (keep identity (mapcat #(power-sums %) (iterate inc 2))))) (dec n)))))
