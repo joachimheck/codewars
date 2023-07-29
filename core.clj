@@ -1230,3 +1230,22 @@
 
 (defn power-sum-dig-term [n]
   (last (nth (sort-by last (take 58 (keep identity (mapcat #(power-sums %) (iterate inc 2))))) (dec n))))
+
+
+
+
+;; Emirps
+(defn from-digits [digits]
+  (reduce #(+ (* 10 %1) %2) digits))
+
+(defn emirps-below [n]
+  (->> (range 2 n)
+       (filter prime?)
+       (map (fn [n] (let [ds (digits n)] (list n (from-digits (reverse ds))))))
+       (remove #(apply = %))
+       (filter (comp prime? second))
+       (map first)))
+
+(defn find-emirp [n]
+  (let [emirps (emirps-below n)]
+    [(count emirps) (last emirps) (apply + emirps)]))
