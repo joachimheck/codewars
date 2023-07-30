@@ -1255,3 +1255,15 @@
 (defn minimum-number [numbers]
   (let [sum (apply + numbers)]
     (- (first (drop-while #(< % sum) (primes))) sum)))
+
+
+
+
+;; The Poet and the Pendulum
+(defn pendulum [numbers]
+  (let [[n & ns] (sort numbers)
+        [l r] (reduce (fn [[l r] [a b]] [(conj l b) (conj r a)])
+                      [[] []]
+                      (partition-all 2 ns))]
+    (remove nil? (concat (reverse l) [n] r))))
+
