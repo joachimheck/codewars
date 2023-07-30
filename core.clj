@@ -1273,3 +1273,16 @@
 ;; Counting Duplicates
 (defn duplicate-count [text]
   (count (filter #(> (second %) 1) (frequencies (string/lower-case text)))))
+
+
+
+
+;; Simple Pig Latin
+(defn pig-it [s]
+  (clojure.string/join
+   " "
+   (map (fn [[c & cs :as word]]
+          (if (re-matches #"[^A-Za-z]" word)
+            (str word)
+            (clojure.string/join (conj (vec cs) c \a \y))))
+        (clojure.string/split s #" "))))
