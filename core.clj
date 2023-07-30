@@ -1267,3 +1267,9 @@
                       (partition-all 2 ns))]
     (remove nil? (concat (reverse l) [n] r))))
 
+
+
+
+;; Counting Duplicates
+(defn duplicate-count [text]
+  (count (filter #(> (second %) 1) (frequencies (string/lower-case text)))))
