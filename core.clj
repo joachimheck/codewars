@@ -431,15 +431,13 @@
 
 ;; Kata: Sum by Factors
 (defn prime? [n]
-  (cond (< n 2) false
-        (= 2 n) true
-        (even? n) false
-        :else (nil? (first (for [i (iterate inc 3)
-                                 :while (<= i (Math/sqrt n))
-                                 :when (= 0 (rem n i))] i)))))
+  (or (= n 2)
+      (and (> n 2) (odd? n) (nil? (first (for [i (iterate #(+ 2 %) 3)
+                                               :while (<= i (Math/sqrt n))
+                                               :when (= 0 (rem n i))] i))))))
 
 (defn primes []
-  (concat '(2) (filter prime? (iterate inc 3))))
+  (filter prime? (iterate inc 2)))
 
 (defn prime-factors [n]
   (let [n (Math/abs n)
@@ -1249,3 +1247,11 @@
 (defn find-emirp [n]
   (let [emirps (emirps-below n)]
     [(count emirps) (last emirps) (apply + emirps)]))
+
+
+
+
+;; Transform to Prime
+(defn minimum-number [numbers]
+  (let [sum (apply + numbers)]
+    (- (first (drop-while #(< % sum) (primes))) sum)))
