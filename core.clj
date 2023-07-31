@@ -1286,3 +1286,12 @@
             (str word)
             (clojure.string/join (conj (vec cs) c \a \y))))
         (clojure.string/split s #" "))))
+
+
+
+
+;; Stop gninnipS My sdroW!
+(defn spin-words [string]
+  (->> (string/split string #" ")
+       (map #(if (>= (count %) 5) (string/join (reverse %)) %))
+       (string/join " ")))
