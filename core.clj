@@ -1295,3 +1295,12 @@
   (->> (string/split string #" ")
        (map #(if (>= (count %) 5) (string/join (reverse %)) %))
        (string/join " ")))
+
+
+
+
+;; Triangle number check
+(defn is-triangle-number [number]
+  (= number
+     (first (drop-while #(< % number)
+                        (map #(/ (+ (* % %) %) 2) (iterate inc 1))))))
