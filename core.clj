@@ -1304,3 +1304,16 @@
   (= number
      (first (drop-while #(< % number)
                         (map #(/ (+ (* % %) %) 2) (iterate inc 1))))))
+
+
+
+
+;; TwoSum
+(defn twosum [numbers target]
+  (first
+   (filter
+    (fn [[a b]] (= target (+ (nth numbers a) (nth numbers b))))
+    (for [n (range (count numbers))
+          m (range (count numbers))
+          :when (not= n m)]
+      [n m]))))
