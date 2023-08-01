@@ -1317,3 +1317,16 @@
           m (range (count numbers))
           :when (not= n m)]
       [n m]))))
+
+
+
+
+;; Vector Affinity
+(defn vector-affinity [a b]
+  (float
+   (if (= a b)
+     1
+     (/ (->> (map list a b)
+             (filter #(apply = %))
+             (count))
+        (max (count a) (count b))))))
