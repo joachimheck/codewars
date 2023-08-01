@@ -1330,3 +1330,22 @@
              (filter #(apply = %))
              (count))
         (max (count a) (count b))))))
+
+
+
+
+;; When Sigma1 Function Has Equals Values For an Integer and Its Reversed One
+(defn divisors [n]
+  (filter #(= 0 (rem n %)) (range 1 (inc n))))
+
+(defn sigma-1-no-memo [n]
+  (apply + (divisors n)))
+
+(def sigma-1 (memoize sigma-1-no-memo))
+
+(defn sigma-1-equals-reversed? [n]
+  (let [reverse-n (Long/parseLong (clojure.string/join (reverse (str n))))]
+    (and (not= n reverse-n) (= (sigma-1 n) (sigma-1 reverse-n)))))
+
+(defn equal-sigma1 [hmax]
+  (apply + (filter sigma-1-equals-reversed? (range (inc hmax)))))
