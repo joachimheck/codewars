@@ -1349,3 +1349,12 @@
 
 (defn equal-sigma1 [hmax]
   (apply + (filter sigma-1-equals-reversed? (range (inc hmax)))))
+
+
+
+
+;; Sum of Digits / Digital Root
+(defn digital-root [n]
+  (if (< n 10)
+    n
+    (digital-root (apply + (digits n)))))
