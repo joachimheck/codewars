@@ -1358,3 +1358,13 @@
   (if (< n 10)
     n
     (digital-root (apply + (digits n)))))
+
+
+
+
+;; Human Readable Time
+(defn human-readable [x]
+  (let [hours (quot x 3600)
+        mins (quot (- x (* 3600 hours)) 60)
+        secs (- x (+ (* 3600 hours) (* 60 mins)))]
+    (format "%02d:%02d:%02d" hours mins secs)))
