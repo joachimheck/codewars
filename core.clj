@@ -1368,3 +1368,19 @@
         mins (quot (- x (* 3600 hours)) 60)
         secs (- x (+ (* 3600 hours) (* 60 mins)))]
     (format "%02d:%02d:%02d" hours mins secs)))
+
+
+
+
+;; Triangle Type
+;; cosine rule: cos C = (a^2 + b^2 - c) / 2ab
+(defn triangle-type [a b c]
+  (let [[A B C] (map (fn [[a b c]] (if (some #(= 0 %) [a b c]) Double/NaN
+                                       (Math/acos (/ (+ (* a a) (* b b) (- (* c c))) (* 2 a b)))))
+                     [[b c a] [c a b] [a b c]])]
+    (cond (or (> (Math/abs (- Math/PI (+ A B C))) 0.000001)
+              (some #(<= % 0.0) [A B C])
+              (some #(Double/isNaN %) [A B C])) 0
+          (every? #(< % (/ Math/PI 2)) [A B C]) 1
+          (some #(= % (/ Math/PI 2)) [A B C]) 2
+          :else 3)))
