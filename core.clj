@@ -1393,3 +1393,18 @@
   ((fnil identity -1)
    (some #(if (= (apply + (take % arr)) (apply + (drop (inc %) arr))) %)
          (range (count arr)))))
+
+
+
+
+;; Decompose a Number
+(defn decompose-inner [n base]
+  (if (< n (* base base))
+    [n]
+    (let [xs (take-while #(<= % n) (reductions * base (repeat base)))]
+      (concat [(count xs)]
+              (decompose-inner (- n (last xs)) (inc base))))))
+
+(defn decompose [n]
+  (let [result (decompose-inner n 2)]
+    [(vec (drop-last result)) (last result)]))
