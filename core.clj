@@ -1420,3 +1420,15 @@
     (if (= 0 (mod pow-sum n))
       (quot pow-sum n)
       -1)))
+
+
+
+
+;; Factorial Decomposition
+(defn decomp [n]
+  (clojure.string/join " * "
+   (map (fn [[n p]] (if (> p 1) (format "%d^%d" n p) (str n)))
+        (sort
+         (apply merge-with +
+                (for [i (range 2 (inc n))]
+                  (prime-factorization i)))))))
