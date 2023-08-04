@@ -1384,3 +1384,12 @@
           (every? #(< % (/ Math/PI 2)) [A B C]) 1
           (some #(= % (/ Math/PI 2)) [A B C]) 2
           :else 3)))
+
+
+
+
+;; Equal Sides of an Array
+(defn find-even-index [arr]
+  ((fnil identity -1)
+   (some #(if (= (apply + (take % arr)) (apply + (drop (inc %) arr))) %)
+         (range (count arr)))))
