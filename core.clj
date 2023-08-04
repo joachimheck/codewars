@@ -1408,3 +1408,15 @@
 (defn decompose [n]
   (let [result (decompose-inner n 2)]
     [(vec (drop-last result)) (last result)]))
+
+
+
+
+;; Playing with Digits
+(defn dig-pow [n p]
+  (let [pow-sum (apply + (map #(long (Math/pow %1 %2))
+                              (map #(Long/parseLong (str %)) (str n))
+                              (iterate inc p)))]
+    (if (= 0 (mod pow-sum n))
+      (quot pow-sum n)
+      -1)))
