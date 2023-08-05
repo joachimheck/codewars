@@ -1,6 +1,5 @@
 (ns codewars.core)
 
-(require '[clojure.set :as set])
 (require '[clojure.string :as string])
 (require '[clojure.test :refer :all])
 
@@ -1441,3 +1440,13 @@
   (let [count-bits (fn [n] (count (filter #{\1} (Integer/toString n 2))))
         c (count-bits n)]
     (first (filter #(= c (count-bits %)) (rest (iterate inc n))))))
+
+
+
+
+;; Anagram difference
+(defn anagram-difference [w1 w2]
+  (let [common (set (filter (set w2) w1))
+        left (apply + (map (fn [[_ f1] [_ f2]] (min f1 f2))
+                           (sort (frequencies (filter common w1))) (sort (frequencies (filter common w2)))))]
+    (+ (- (count w1) left) (- (count w2) left))))
