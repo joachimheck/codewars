@@ -1432,3 +1432,12 @@
          (apply merge-with +
                 (for [i (range 2 (inc n))]
                   (prime-factorization i)))))))
+
+
+
+
+;; Basics 08: Find next higher number with same Bits (1's)
+(defn next-higher [n]
+  (let [count-bits (fn [n] (count (filter #{\1} (Integer/toString n 2))))
+        c (count-bits n)]
+    (first (filter #(= c (count-bits %)) (rest (iterate inc n))))))
