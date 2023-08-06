@@ -1471,15 +1471,40 @@
 
 ;; Moves in squared strings (I)
 (defn vert-mirror [s]
-  (->> (clojure.string/split s #"\n")
+  (->> (string/split s #"\n")
        (map reverse)
-       (map clojure.string/join)
-       (clojure.string/join "\n")))
+       (map string/join)
+       (string/join "\n")))
 
 (defn hor-mirror [s]
-  (->> (clojure.string/split s #"\n")
+  (->> (string/split s #"\n")
        reverse
-       (clojure.string/join "\n")))
+       (string/join "\n")))
 
 (defn oper [f s]
   (f s))
+
+
+
+
+;; Moves in squared strings (II)
+(defn rot [s]
+  (->> s
+       string/split-lines
+       (map string/reverse)
+       reverse
+       (string/join "\n")))
+
+(defn selfie-and-rot [s]
+  (let [l (count (first (string/split-lines s)))
+        dots (string/join (repeat l \.))]
+   (string/join
+    "\n"
+    (concat
+     (->> s
+          string/split-lines
+          (map #(string/join [% dots])))
+     (->> s
+          rot
+          string/split-lines
+          (map #(string/join [dots %])))))))
