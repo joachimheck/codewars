@@ -1465,3 +1465,21 @@
                  [(+ acc (* m (values c))) (rest s)]))
              [0 (rest roman)]
              roman))))
+
+
+
+
+;; Moves in squared strings (I)
+(defn vert-mirror [s]
+  (->> (clojure.string/split s #"\n")
+       (map reverse)
+       (map clojure.string/join)
+       (clojure.string/join "\n")))
+
+(defn hor-mirror [s]
+  (->> (clojure.string/split s #"\n")
+       reverse
+       (clojure.string/join "\n")))
+
+(defn oper [f s]
+  (f s))
