@@ -1450,3 +1450,18 @@
         left (apply + (map (fn [[_ f1] [_ f2]] (min f1 f2))
                            (sort (frequencies (filter common w1))) (sort (frequencies (filter common w2)))))]
     (+ (- (count w1) left) (- (count w2) left))))
+
+
+
+
+;; Roman Numerals Decoder
+(defn translate-roman-numerals [roman]
+  (let [numerals "_IVXLCDM_"
+        values {\I 1 \V 5 \X 10 \L 50 \C 100 \D 500 \M 1000}]
+    (first
+     (reduce (fn [[acc s] c]
+               (let [larger (set (last (partition-by #{c} numerals)))
+                     m (if (some larger s) -1 1)]
+                 [(+ acc (* m (values c))) (rest s)]))
+             [0 (rest roman)]
+             roman))))
